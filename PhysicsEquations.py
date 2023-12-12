@@ -9,3 +9,6 @@ def hohmann_time(G,M,r1,r2):
 def phase_time():
     pass
 
+def Cv():
+    return
+

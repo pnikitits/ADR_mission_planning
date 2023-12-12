@@ -85,6 +85,7 @@ class ADR_Environment(BaseEnvironment):
         self.transition_function(action)
 
         # state update
+        next_state = self.state.transition_function(action)
 
         next_state = self.env_observe_state()
         reward = self.calculate_reward(self.last_observation, action, next_state)

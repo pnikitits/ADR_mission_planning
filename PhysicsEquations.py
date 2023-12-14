@@ -35,8 +35,24 @@ def hohmann_time(r1 , r2 , G=G , M=M):
     return th
 
 
-def phase_time():
-    pass
+def phase_time(otv , target):
+    # time to wait until at right angle diff to start the hohmann transfer
+    # du is angle when to start
+
+    # A COMPLETER (abs dans l'histoire)
+    d_ang = otv.mean_anomaly - target.mean_anomaly - delta_u(otv.a , target.a)
+
+    if d_ang < 0:
+        d_ang = 2*np.pi - d_ang
+    
+    dt = d_ang / (target.angular_velocity - otv.angular_velocity)
+    return dt
+    # A COMPLETER
+
+
+def delta_u(r1 , r2):
+    return np.pi * (1 - np.sqrt( (r1+r2) / (2*r2) ))
+
 
 
 def Cv(action , state , G=G , M=M):

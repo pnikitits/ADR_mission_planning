@@ -13,4 +13,14 @@ class Debris:
         self.mean_anomaly = mean_anomaly
         self.a = a
         self.rcs = rcs
+        self.angular_velocity = self.init_velocity()
+
+
+    def update(self , dt):
+        self.mean_anomaly += self.angular_velocity * dt
+        
+
+    def init_velocity(self):
+        # find the velocity
+        pass
         

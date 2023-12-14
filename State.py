@@ -1,4 +1,5 @@
 import numpy as np
+from PhysicsEquations import Cv
 
 class State:
     def __init__(self , removal_step , total_n_debris , dv_max , dt_max , first_debris):
@@ -12,7 +13,7 @@ class State:
     def transition_function(self , action):
         self.removal_step += 1
         self.number_debris_left -= 1
-        self.dv_left -= Cv(action , self) # to define in physics eqs
+        self.dv_left -= Cv(action , self)
         self.dt_left -= action[1]
         self.current_removing_debris = action[0]
         self.binary_flags[self.current_removing_debris] = 1

@@ -1,5 +1,5 @@
 import numpy as np
-from State import State
+#from State import State
 from Debris import Debris
 
 """
@@ -35,11 +35,33 @@ def hohmann_time(r1 , r2 , G=G , M=M):
     return th
 
 
-def phase_time(otv , target):
+def phase_time(otv , target , G=G , M=M):
     # time to wait until at right angle diff to start the hohmann transfer
     # du is angle when to start
 
-    # A COMPLETER (abs dans l'histoire)
+    # Correction de phase_time, assuming r1 < r2
+    mu = G*M
+
+    r1 = otv.a
+    r2 = target.a
+
+    init_ang_1 = otv.mean_anomaly
+    init_ang_2 = target.mean_anomaly
+
+    angle_diff = init_ang_2 - init_ang_1
+    du = delta_u(r1 , r2)
+
+    if angle_diff < du:
+        angle_diff += 2*np.pi
+
+    ang_vel_1 = np.sqrt( mu/(r1**3) )
+    ang_vel_2 = np.sqrt( mu/(r2**3) )
+    
+    dt = (du - angle_diff) / (ang_vel_2 - ang_vel_1)
+    return dt
+
+
+    """# A COMPLETER (abs dans l'histoire)
     d_ang = otv.mean_anomaly - target.mean_anomaly - delta_u(otv.a , target.a)
 
     if d_ang < 0:
@@ -47,7 +69,7 @@ def phase_time(otv , target):
     
     dt = d_ang / (target.angular_velocity - otv.angular_velocity)
     return dt
-    # A COMPLETER
+    # A COMPLETER"""
 
 
 def delta_u(r1 , r2):

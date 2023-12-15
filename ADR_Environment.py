@@ -29,9 +29,6 @@ class ADR_Environment(BaseEnvironment):
                            self.dt_max_per_transfer ,
                            self.first_debris)
 
-    def init_debris(self):
-        
-        pass
 
     def env_observe_state(self):
         return [self.removal_step , self.number_debris_left , self.dv_left , self.dt_left , self.current_removing_debris] + self.binary_flags
@@ -53,38 +50,43 @@ class ADR_Environment(BaseEnvironment):
         otv = self.state.current_removing_debris
         target = self.debris_list[next_debris_index]
 
-        # Min time
-        # check if dt > hohmann_t + phase_t:
-        # tr1 = True
+        """
+        Min time
+        check if dt > hohmann_t + phase_t:
+        tr1 = True
+        """
         tr1 = False
         if dt > (hohmann_time(otv.a , target.a)) + phase_time(otv , target):
             tr1 = True
 
-
-        # Max time
-        # check if next_state_t_left > 0:
-        # tr2 = True
+        """
+        Max time
+        check if next_state_t_left > 0:
+        tr2 = True
+        """
         tr2 = False
         if (self.state.dt_left - dt) > 0:
             tr2 = True
 
-
-        # if debris is available (binary flag == 0)
-        # tr3 = True
+        """
+        if debris is available (binary flag == 0)
+        tr3 = True
+        """
         tr3 = False
         if self.state.binary_flags[next_debris_index] == 0:
             tr3 = True
 
-
-        # Max dv (fuel)
-        # check if next_state_dv_left > 0
-        # tr4 = True
+        """
+        Max dv (fuel)
+        check if next_state_dv_left > 0
+        tr4 = True
+        """
         tr4 = False
         if (self.state.dv_left - hohmann_dv(otv.a , target.a)) > 0:
             tr4 = True
 
-
         return (tr1 and tr2 and tr3 and tr4)
+
 
 
     def is_terminal(self , action):
@@ -125,3 +127,34 @@ class ADR_Environment(BaseEnvironment):
                 dict[i] = (debris , dt)
                 i += 1
         return dict
+    
+
+    def init_debris(self):
+        pass
+
+    def init_debris_from_data(self):
+        pass
+
+    def init_random_debris(self):
+        """Generate random debris"""
+
+        n = 10
+        min_a = 20
+        max_a = 30
+        min_mean_anomaly = 0
+        max_mean_anomaly = 2*np.pi
+
+        output = []
+        for _ in range(n):
+            debris = Debris(norad=None,
+                            inclination=None,
+                            raan=None,
+                            eccentricity=0,
+                            arg_perigee=None,
+                            mean_anomaly=np.random.uniform(min_mean_anomaly, max_mean_anomaly),
+                            a=np.random.uniform(min_a, max_a),
+                            rcs=None)
+            output.append(debris)
+
+        self.debris_list = output
+        

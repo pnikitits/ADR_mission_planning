@@ -36,10 +36,12 @@ def hohmann_time(r1 , r2 , G=G , M=M):
 
 
 def phase_time(otv , target , G=G , M=M):
-    # time to wait until at right angle diff to start the hohmann transfer
-    # du is angle when to start
+    """
+    Time to wait until at right angle diff to start the hohmann transfer
+    du is angle when to start
 
-    # Correction de phase_time, assuming r1 < r2
+    Correction de phase_time, assuming r1 < r2
+    """
     mu = G*M
 
     r1 = otv.a

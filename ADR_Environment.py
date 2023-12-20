@@ -50,7 +50,7 @@ class ADR_Environment(BaseEnvironment):
         
         next_debris_index , dt = action
 
-        otv = self.state.current_removing_debris
+        otv = self.debris_list[self.state.current_removing_debris]
         target = self.debris_list[next_debris_index]
 
         """

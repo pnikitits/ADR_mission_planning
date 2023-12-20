@@ -59,8 +59,12 @@ def phase_time(otv , target , G=G , M=M):
 
     ang_vel_1 = np.sqrt( mu/(r1**3) )
     ang_vel_2 = np.sqrt( mu/(r2**3) )
-    
-    dt = (du - angle_diff) / (ang_vel_2 - ang_vel_1)
+
+    if ang_vel_1 == ang_vel_2:
+        dt = 0
+    else:
+        dt = (du - angle_diff) / (ang_vel_2 - ang_vel_1)
+
     return dt
 
 

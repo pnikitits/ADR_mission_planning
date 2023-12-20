@@ -36,15 +36,12 @@ def hohmann_time(r1 , r2 , G=G , M=M):
     return th
 
 
-def phase_time(otv , target , G=G , M=M):
-
-    return 0
-    """
-    Time to wait until at right angle diff to start the hohmann transfer
-    du is angle when to start
-
-    Correction de phase_time, assuming r1 < r2
-    """
+"""def phase_time_OLD(otv , target , G=G , M=M):
+    
+    #Time to wait until at right angle diff to start the hohmann transfer
+    #du is angle when to start
+    #Correction de phase_time, assuming r1 < r2
+    
     mu = G*M
 
     r1 = otv.a
@@ -80,18 +77,85 @@ def phase_time(otv , target , G=G , M=M):
         print('phase time')
         print(dt)
 
-    return dt
+    return dt"""
 
 
-    """# A COMPLETER (abs dans l'histoire)
-    d_ang = otv.mean_anomaly - target.mean_anomaly - delta_u(otv.a , target.a)
 
-    if d_ang < 0:
-        d_ang = 2*np.pi - d_ang
+
+
+def phase_time(otv , target , G=G , M=M , debug_msg=True):
     
-    dt = d_ang / (target.angular_velocity - otv.angular_velocity)
+    mu = G*M                    # N * M^2 / KG
+    r1 = round(otv.a , 2)                  # M
+    r2 = round(target.a , 2)               # M
+    ang_1 = round(otv.mean_anomaly , 2)    # DEG
+    ang_2 = round(target.mean_anomaly , 2) # DEG
+
+    #if r1 > r2:
+    #    debug_msg = True
+
+
+    print("\n--- Phase Time ---\n") if debug_msg else None
+    # Check orbits
+    if r1 == r2:
+        print("SAME ORBIT") if debug_msg else None
+        print("\n------ END -------\n") if debug_msg else None
+        return 0
+    elif r1 < r2:
+        print("GO UP:" , r1 , r2) if debug_msg else None
+    elif r1 > r2:
+        print("GO DOWN:" , r1 , r2) if debug_msg else None
+    
+
+    # delta_u
+    du = delta_u(r1 , r2)
+    print("DU:" , round(du , 2)) if debug_msg else None
+    if r1 > r2:
+        reverse_du = delta_u(r2 , r1)
+        print("Reverse DU:" , round(reverse_du , 2)) if debug_msg else None
+        du = reverse_du
+
+
+    # angle diff
+    angle_diff = round(ang_2 - ang_1 , 2)
+    
+    if angle_diff > 0:
+        print(f"ang_1 < ang_2 : {ang_1}° < {ang_2}° | diff : {angle_diff}") if debug_msg else None
+    elif angle_diff < 0:
+        print(f"ang_1 > ang_2 : {ang_1}° > {ang_2}° | diff : {angle_diff}") if debug_msg else None
+    elif angle_diff == 0:
+        print(f"same angle | diff : {angle_diff}") if debug_msg else None
+
+    if r1 < r2 and angle_diff < du:
+        angle_diff += 360
+        print("modified angle diff +360° :" , angle_diff) if debug_msg else None
+    elif r1 > r2 and angle_diff > du:
+        angle_diff -= 360
+        print("modified angle diff -360° :" , angle_diff) if debug_msg else None
+    
+
+
+
+
+
+    # angle velocity
+    ang_vel_1 = round(otv.angular_velocity , 2)    # Deg / Day
+    ang_vel_2 = round(target.angular_velocity , 2) # Deg / Day
+    print(f"ang_vel: {ang_vel_1} | {ang_vel_2}") if debug_msg else None
+
+    # phasing time
+    dt = (du - angle_diff) / (ang_vel_2 - ang_vel_1)
+    if dt < 0:
+        print(f"--------------------------------------------------------> phasing time: {round(dt , 2)}") if debug_msg else None
+    else:
+        print(f"phasing time: {round(dt , 2)}") if debug_msg else None
+
+    print("\n------ END -------\n") if debug_msg else None
     return dt
-    # A COMPLETER"""
+
+
+
+
 
 
 def delta_u(r1 , r2):

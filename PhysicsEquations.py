@@ -1,6 +1,6 @@
 import numpy as np
 #from State import State
-from Debris import Debris
+# from Debris import Debris
 
 """
 Physics Equations :
@@ -14,9 +14,8 @@ dv  hohmann boost (dv1 + dv2)
 th  hohmann boost duration
 """
 
-G = 6.67e-7
-M = 5.97e24
-
+G = 6.67e-11 # N * M^2 / KG^2
+M = 5.97e24  # KG
 
 
 def hohmann_dv(r1 , r2 , G=G , M=M):

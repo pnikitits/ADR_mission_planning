@@ -2,6 +2,7 @@ from environment import BaseEnvironment
 import numpy as np
 from State import State
 from PhysicsEquations import *
+from Debris import Debris
 
 
 class ADR_Environment(BaseEnvironment):
@@ -17,9 +18,11 @@ class ADR_Environment(BaseEnvironment):
         self.first_debris = 4
 
         self.debris_list = []
-        self.init_debris()
+        
+        # Init randomly for testing
+        self.init_random_debris(self)
 
-        self.action_space = self.action_dict()
+        self.action_space = self.action_dict(self)
         self.action_space_len = len(self.action_space)
 
         # Initial values
@@ -99,13 +102,19 @@ class ADR_Environment(BaseEnvironment):
     def env_start(self):
         pass
 
-    def update_debris_pos():
-        pass
+    def update_debris_pos(self, action):
+        # Iterate through debris list to update positions
+        for debris in self.debris_list:
+            debris.update(action[1])
 
-    def env_step(self, action):
+
+    def env_step(self, action_key):
+
+        # Convert action key from NN into action
+        action = self.action_space[action_key]
         
         reward = self.calculate_reward(action)
-        self.update_debris_pos()
+        self.update_debris_pos(self, action)
 
         is_terminal = self.is_terminal(self.state)
 
@@ -138,11 +147,13 @@ class ADR_Environment(BaseEnvironment):
     def init_random_debris(self):
         """Generate random debris"""
 
+        np.random.seed(42)
+
         n = 10
-        min_a = 20
-        max_a = 30
+        min_a = 200+6371
+        max_a = 600+6371
         min_mean_anomaly = 0
-        max_mean_anomaly = 2*np.pi
+        max_mean_anomaly = 360
 
         output = []
         for _ in range(n):

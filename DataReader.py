@@ -32,7 +32,7 @@ def make_Iridium_debris():
         eccentricity = eccentricity_list[i]
         arg_perigee = arg_perigee_list[i]
         mean_anomaly = mean_anomaly_list[i]
-        a = a_list[i]/6371 # normalise the semi major axis
+        a = a_list[i]
 
         debris = Debris(norad=norad,
                         inclination=inclination,

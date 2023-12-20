@@ -80,15 +80,7 @@ def delta_u(r1 , r2):
 
 
 
-def Cv(action , state , G=G , M=M):
-    # Get current debris from state.current_removing_debris -> r1
-    current_d = state.current_removing_debris
-    r1 = current_d.a # object 'Debris', assuming circular orbit (r=a)
-
-    # Get target debris from action[0] -> r2
-    target_d = action[0]
-    r2 = target_d.r
-
+def Cv(r1, r2 , G=G , M=M):
     # Compute dv(r1 , r2)
     dv = hohmann_dv(r1=r1 , r2=r2 , G=G , M=M)
 

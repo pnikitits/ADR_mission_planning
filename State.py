@@ -8,7 +8,7 @@ class State:
         self.dv_left = dv_max
         self.dt_left = dt_max
         self.current_removing_debris = first_debris
-        self.binary_flags = np.zeros(total_n_debris).tolist
+        self.binary_flags = np.zeros(total_n_debris).tolist()
 
     def transition_function(self , action):
         self.removal_step += 1
@@ -17,4 +17,7 @@ class State:
         self.dt_left -= action[1]
         self.current_removing_debris = action[0]
         self.binary_flags[self.current_removing_debris] = 1
+
+    def to_list(self):
+        return [self.removal_step , self.number_debris_left , self.dv_left , self.dt_left , self.current_removing_debris] + self.binary_flags
         

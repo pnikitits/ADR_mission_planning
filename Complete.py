@@ -4,6 +4,7 @@ from rl_glue import RLGlue
 from environment import BaseEnvironment
 
 # ARD Envinonment
+from ADR_Environment import ADR_Environment
 
 from agent import BaseAgent
 from collections import deque
@@ -43,7 +44,9 @@ class ActionValueNetwork:
     def get_action_values(self , s):
         W0 , b0 = self.weights[0]["W"] , self.weights[0]["b"]
         #print("S in get_action_value =" , s)
-        #print("Shapes - W0:", W0.shape, "s:", s.shape, "b0:", b0.shape)
+        print("Shapes - W0:", W0.shape, "s:", s.shape, "b0:", b0.shape)
+        
+
         psi = np.dot(s , W0) + b0
         x = np.maximum(psi , 0)
         W1 , b1 = self.weights[1]["W"] , self.weights[1]["b"]
@@ -271,24 +274,13 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
         ep_count = 0
         for episode in tqdm(range(1 , experiment_parameters["num_episodes"]+1)):
             ep_count += 1
-            environment.pass_count(environment, message=f"Ep : {ep_count}")
+            #environment.pass_count(environment, message=f"Ep : {ep_count}")
             rl_glue.rl_episode(experiment_parameters["timeout"])
             episode_reward = rl_glue.rl_agent_message("get_sum_reward")
 
-            #print(f"reward {episode_reward} for {ep_count}")
-
-            min_dist_reached = rl_glue.environment.get_min_dist()
-            min_gg_dist = rl_glue.environment.get_the_plot()
-            n_action_done = rl_glue.environment.get_action_done()
-            boost_done = rl_glue.environment.get_the_boost()
-
-            print(f"ep: {ep_count} |reward: {episode_reward} | n action: {n_action_done} | boost error: {boost_done[0]}% {boost_done[1]}%")
-
-            #if (boost_done[0]+boost_done[1]) < 10:
-            #    rl_glue.environment.plot_alts(ep_count)
             
-            #if min_gg_dist != 100000:
-            agnet_sum_reward[run - 1 , episode - 1] = boost_done[0] + boost_done[1]
+
+            
 
     save_path = input("Save path name : ")
     save_weights(path= save_path, data=rl_glue.agent.network.weights)
@@ -317,21 +309,21 @@ def load_weights(path):
 
 
 if __name__ == "__main__":
-    prompt1 = input("Start from scratch ? [y/n] :")
+    #prompt1 = input("Start from scratch ? [y/n] :")
 
     weight_file = None
-    if prompt1 == "n":
-        weight_file = input("input file path: ")
+    #if prompt1 == "n":
+    #    weight_file = input("input file path: ")
     
 
     experiment_parameters = {"num_runs":1,
                              "num_episodes":3000,
                              "timeout":2000}
     environment_parameters = {}
-    #current_env = SatelliteEnvironment
-    agent_parameters = {"network_config":{"state_dim":4,
+    current_env = ADR_Environment
+    agent_parameters = {"network_config":{"state_dim":15,
                                           "num_hidden_units":256,
-                                          "num_actions":2,
+                                          "num_actions":300,
                                           "weights_file":weight_file},
                         "optimizer_config":{"step_size":1e-3,
                                             "beta_m":0.9,

@@ -30,11 +30,15 @@ class ADR_Environment(BaseEnvironment):
                            self.total_n_debris ,
                            self.dv_max ,
                            self.dt_max_per_transfer ,
-                           self.first_debris)
+                           self.first_debris).to_list()
+        
+        observation = self.env_observe_state()
+        self.last_observation = observation
+        return observation
 
 
     def env_observe_state(self):
-        return [self.removal_step , self.number_debris_left , self.dv_left , self.dt_left , self.current_removing_debris] + self.binary_flags
+        return self.state#[self.removal_step , self.number_debris_left , self.dv_left , self.dt_left , self.current_removing_debris] + self.binary_flags
 
 
     def calculate_reward(self , action):
@@ -50,7 +54,7 @@ class ADR_Environment(BaseEnvironment):
         
         next_debris_index , dt = action
 
-        otv = self.state.current_removing_debris
+        otv = self.debris_list[self.state.current_removing_debris]
         target = self.debris_list[next_debris_index]
 
         """
@@ -100,7 +104,15 @@ class ADR_Environment(BaseEnvironment):
     
 
     def env_start(self):
-        pass
+        print("ENV START")
+        reward = 0.0
+        is_terminal = False
+
+        # values update
+
+        observation = self.env_init()
+        print(observation)
+        return (reward, observation, is_terminal)
 
     def update_debris_pos(self, action):
         # Iterate through debris list to update positions
@@ -119,7 +131,8 @@ class ADR_Environment(BaseEnvironment):
         is_terminal = self.is_terminal(self.state)
 
         self.state.transition_function(action)
-        return (reward, self.state, is_terminal)
+        print("STATE (ENV STEP)" , self.state)
+        return (reward, self.state.to_list(), is_terminal)
 
 
 

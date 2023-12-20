@@ -12,7 +12,7 @@ class ADR_Environment(BaseEnvironment):
 
     def env_init(self , env_info={}):
         self.total_n_debris = 10
-        self.dv_max = 100
+        self.dv_max_per_mission = 100
         self.dt_max_per_mission = 365
         self.dt_max_per_transfer = 30
         self.first_debris = 4
@@ -26,11 +26,11 @@ class ADR_Environment(BaseEnvironment):
         self.action_space_len = len(self.action_space)
 
         # Initial values
-        self.state = State(0 ,
-                           self.total_n_debris ,
-                           self.dv_max ,
-                           self.dt_max_per_transfer ,
-                           self.first_debris).to_list()
+        self.state = State(removal_step = 0 ,
+                           total_n_debris = self.total_n_debris ,
+                           dv_max_per_mission = self.dv_max_per_mission ,
+                           dt_max_per_mission = self.dt_max_per_mission ,
+                           first_debris = self.first_debris)
         
         observation = self.env_observe_state()
         self.last_observation = observation
@@ -38,7 +38,7 @@ class ADR_Environment(BaseEnvironment):
 
 
     def env_observe_state(self):
-        return self.state#[self.removal_step , self.number_debris_left , self.dv_left , self.dt_left , self.current_removing_debris] + self.binary_flags
+        return self.state.to_list() #[self.removal_step , self.number_debris_left , self.dv_left , self.dt_left , self.current_removing_debris] + self.binary_flags
 
 
     def calculate_reward(self , action):
@@ -51,7 +51,7 @@ class ADR_Environment(BaseEnvironment):
 
     def is_legal(self , action):
         # input is state before transition
-        
+
         next_debris_index , dt = action
 
         otv = self.debris_list[self.state.current_removing_debris]
@@ -134,7 +134,8 @@ class ADR_Environment(BaseEnvironment):
         # Check if terminal
         is_terminal = self.is_terminal(self.state)
 
-        self.state.transition_function(action)
+        self.state.transition_function(self, action)
+        
         return (reward, self.state, is_terminal)
 
 

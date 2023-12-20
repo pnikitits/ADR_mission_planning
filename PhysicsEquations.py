@@ -32,11 +32,13 @@ def hohmann_dv(r1 , r2 , G=G , M=M):
 def hohmann_time(r1 , r2 , G=G , M=M):
     # Indepent of moving up or down
     mu = G*M
-    th = np.pi * np.sqrt( ((r1+r2)**3) / (8*mu) )
+    th = np.pi * np.sqrt( ((r1+r2)**3) / (8*mu) ) / 86400 #Convert to days
     return th
 
 
 def phase_time(otv , target , G=G , M=M):
+
+    return 0
     """
     Time to wait until at right angle diff to start the hohmann transfer
     du is angle when to start
@@ -48,14 +50,16 @@ def phase_time(otv , target , G=G , M=M):
     r1 = otv.a
     r2 = target.a
 
+
     init_ang_1 = otv.mean_anomaly
     init_ang_2 = target.mean_anomaly
 
     angle_diff = init_ang_2 - init_ang_1
     du = delta_u(r1 , r2)
 
+
     if angle_diff < du:
-        angle_diff += 2*np.pi
+        angle_diff += 360
 
     ang_vel_1 = np.sqrt( mu/(r1**3) )
     ang_vel_2 = np.sqrt( mu/(r2**3) )
@@ -63,7 +67,18 @@ def phase_time(otv , target , G=G , M=M):
     if ang_vel_1 == ang_vel_2:
         dt = 0
     else:
+        # Angles in degrees and angular velocities in degrees/day
         dt = (du - angle_diff) / (ang_vel_2 - ang_vel_1)
+    
+    if dt>0 and r2 > r1:
+        print('radii')
+        print(r1, r2)
+        print('angles')
+        print(otv.mean_anomaly, target.mean_anomaly)
+        print('delta u')
+        print(du)
+        print('phase time')
+        print(dt)
 
     return dt
 
@@ -80,7 +95,8 @@ def phase_time(otv , target , G=G , M=M):
 
 
 def delta_u(r1 , r2):
-    return np.pi * (1 - np.sqrt( (r1+r2) / (2*r2) ))
+    # Return in degrees
+    return np.rad2deg(np.pi * (1 - np.sqrt( (r1+r2) / (2*r2) )))
 
 
 

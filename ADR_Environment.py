@@ -20,9 +20,9 @@ class ADR_Environment(BaseEnvironment):
         self.debris_list = []
         
         # Init randomly for testing
-        self.init_random_debris(self)
+        self.init_random_debris()
 
-        self.action_space = self.action_dict(self)
+        self.action_space = self.action_dict()
         self.action_space_len = len(self.action_space)
 
         # Initial values

@@ -3,10 +3,11 @@ from rl_glue import RLGlue
 from ADR_Environment import ADR_Environment
 import DataReader
 
-env = ADR_Environment
+env_class = ADR_Environment
 
 # Testing env init
-env.env_init(env)
+env = env_class()
+env.env_init()
 
 # Testing the action space
 action_key = 1
@@ -14,9 +15,9 @@ print(env.action_space[action_key])
 action = env.action_space[action_key]
 
 # Test update debris pos
-print(env.debris_list[0].mean_anomaly)
+print(env.debris_list[9].mean_anomaly)
 print(env.debris_list[0].angular_velocity)
-env.update_debris_pos(env, action)
+env.update_debris_pos(action)
 print(env.debris_list[0].mean_anomaly)
 
 # Test datareader

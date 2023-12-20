@@ -19,6 +19,7 @@ M = 5.97e24  # KG
 
 
 def hohmann_dv(r1 , r2 , G=G , M=M):
+    # Indepent of moving up or down
     mu = G*M
 
     dv1 = np.sqrt(mu/r1)*(np.sqrt(2*r2/(r1+r2))-1)
@@ -29,6 +30,7 @@ def hohmann_dv(r1 , r2 , G=G , M=M):
 
 
 def hohmann_time(r1 , r2 , G=G , M=M):
+    # Indepent of moving up or down
     mu = G*M
     th = np.pi * np.sqrt( ((r1+r2)**3) / (8*mu) )
     return th

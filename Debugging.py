@@ -10,7 +10,7 @@ env = env_class()
 env.env_init()
 
 # Testing the action space
-action_key = 1
+action_key = 25
 print(env.action_space[action_key])
 action = env.action_space[action_key]
 
@@ -26,3 +26,7 @@ print(env.debris_list[0].mean_anomaly)
 # print(debris_list[0].mean_anomaly)
 # print(debris_list[0].angular_velocity)
 
+# Test state transition
+env.state.transition_function(env, action)
+
+print()

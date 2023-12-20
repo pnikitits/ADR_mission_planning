@@ -125,14 +125,17 @@ class ADR_Environment(BaseEnvironment):
         # Convert action key from NN into action
         action = self.action_space[action_key]
         
+        # Get reward based on action
         reward = self.calculate_reward(action)
+
+        # Propagate debris positions
         self.update_debris_pos(self, action)
 
+        # Check if terminal
         is_terminal = self.is_terminal(self.state)
 
         self.state.transition_function(action)
-        print("STATE (ENV STEP)" , self.state)
-        return (reward, self.state.to_list(), is_terminal)
+        return (reward, self.state, is_terminal)
 
 
 

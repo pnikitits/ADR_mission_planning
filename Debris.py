@@ -41,7 +41,7 @@ class Debris:
     def update(self , dt):
         # Update position after timestep
         self.mean_anomaly += self.angular_velocity * dt
-        
+        self.mean_anomaly = self.mean_anomaly%360
 
     def init_velocity(self):
         # Find the angular velocity -  DEGREES / DAY

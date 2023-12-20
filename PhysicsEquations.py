@@ -1,6 +1,6 @@
 import numpy as np
 #from State import State
-from Debris import Debris
+# from Debris import Debris
 
 """
 Physics Equations :
@@ -14,12 +14,12 @@ dv  hohmann boost (dv1 + dv2)
 th  hohmann boost duration
 """
 
-G = 6.67e-7
-M = 5.97e24
-
+G = 6.67e-11 # N * M^2 / KG^2
+M = 5.97e24  # KG
 
 
 def hohmann_dv(r1 , r2 , G=G , M=M):
+    # Indepent of moving up or down
     mu = G*M
 
     dv1 = np.sqrt(mu/r1)*(np.sqrt(2*r2/(r1+r2))-1)
@@ -30,16 +30,19 @@ def hohmann_dv(r1 , r2 , G=G , M=M):
 
 
 def hohmann_time(r1 , r2 , G=G , M=M):
+    # Indepent of moving up or down
     mu = G*M
     th = np.pi * np.sqrt( ((r1+r2)**3) / (8*mu) )
     return th
 
 
 def phase_time(otv , target , G=G , M=M):
-    # time to wait until at right angle diff to start the hohmann transfer
-    # du is angle when to start
+    """
+    Time to wait until at right angle diff to start the hohmann transfer
+    du is angle when to start
 
-    # Correction de phase_time, assuming r1 < r2
+    Correction de phase_time, assuming r1 < r2
+    """
     mu = G*M
 
     r1 = otv.a

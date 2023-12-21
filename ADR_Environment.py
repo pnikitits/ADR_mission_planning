@@ -208,9 +208,9 @@ class ADR_Environment(BaseEnvironment):
         
     def get_term_reason(self):
         # Return 1 if terminal state caused by this condition
-        impossible_dt = hash(not self.debris_list[0])
-        time_limit = hash(not self.debris_list[1])
-        impossible_binary_flag = hash(not self.debris_list[2])
-        fuel_limit = hash(not self.debris_list[3])
+        impossible_dt = hash(not self.debug_list[0])
+        time_limit = hash(not self.debug_list[1])
+        impossible_binary_flag = hash(not self.debug_list[2])
+        fuel_limit = hash(not self.debug_list[3])
 
         return fuel_limit, time_limit, impossible_dt, impossible_binary_flag 

@@ -168,7 +168,7 @@ class ADR_Environment(BaseEnvironment):
 
         n = 10
         min_a = 200+6371
-        max_a = 600+6371
+        max_a = 2000+6371
         min_mean_anomaly = 0
         max_mean_anomaly = 360
 

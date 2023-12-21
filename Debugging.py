@@ -10,7 +10,7 @@ env = env_class()
 env.env_init()
 
 # Testing the action space
-action_key = 3*30+0
+action_key = 7*30+2
 print(env.action_space[action_key])
 action = env.action_space[action_key]
 

@@ -11,13 +11,16 @@ class ADR_Environment(BaseEnvironment):
         
 
     def env_init(self , env_info={}):
+
+        # Debugging
+        self.debug = True
+        self.debug_list = [0, 0, 0, 0]
+
         self.total_n_debris = 10 # TODO gets len debris after datareader
-        self.dv_max_per_mission = 100
-        self.dt_max_per_mission = 365
+        self.dv_max_per_mission = 20
+        self.dt_max_per_mission = 70
         self.dt_max_per_transfer = 30
         self.first_debris = 0
-        self.debug = True
-
         self.debris_list = []
         
         # Init randomly for testing
@@ -92,6 +95,12 @@ class ADR_Environment(BaseEnvironment):
         tr4 = False
         if (self.state.dv_left - hohmann_dv(otv.a , target.a)) > 0:
             tr4 = True
+
+        # if not (tr1 and tr2 and tr3 and tr4):
+        #     self.debug_list = [tr1, tr2, tr3, tr4]
+        
+        
+        self.debug_list = [tr1, tr2, tr3, tr4]
 
         return (tr1 and tr2 and tr3 and tr4)
 
@@ -197,3 +206,11 @@ class ADR_Environment(BaseEnvironment):
 
         self.debris_list = output
         
+    def get_term_reason(self):
+        # Return 1 if terminal state caused by this condition
+        impossible_dt = hash(not self.debris_list[0])
+        time_limit = hash(not self.debris_list[1])
+        impossible_binary_flag = hash(not self.debris_list[2])
+        fuel_limit = hash(not self.debris_list[3])
+
+        return fuel_limit, time_limit, impossible_dt, impossible_binary_flag 

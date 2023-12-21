@@ -1,0 +1,37 @@
+{
+    "os": "macOS-12.5.1-arm64-arm-64bit",
+    "python": "3.8.18",
+    "heartbeatAt": "2023-12-21T11:02:57.736826",
+    "startedAt": "2023-12-21T11:02:57.156990",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "Complete.py",
+    "codePathLocal": "Complete.py",
+    "codePath": "Complete.py",
+    "git": {
+        "remote": "https://github.com/pnikitits/ADR_mission_planning.git",
+        "commit": "3351deac89b44d3800b7d08e6d32ecdd6e7d118b"
+    },
+    "email": "hugoderohanwillner@gmail.com",
+    "root": "/Users/hugoderohanwillner/Documents/MSc AI/Lab Project/ADR_Mission_Planning/ADR_mission_planning",
+    "host": "Hugos-MBP.numericable.fr",
+    "username": "hugoderohanwillner",
+    "executable": "/Users/hugoderohanwillner/anaconda3/envs/Instadeep/bin/Python",
+    "cpu_count": 8,
+    "cpu_count_logical": 8,
+    "disk": {
+        "/": {
+            "total": 228.27386474609375,
+            "used": 158.82785034179688
+        }
+    },
+    "gpuapple": {
+        "type": "arm",
+        "vendor": "Apple"
+    },
+    "memory": {
+        "total": 8.0
+    }
+}

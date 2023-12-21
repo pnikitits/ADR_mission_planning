@@ -15,6 +15,7 @@ import shutil
 from plot_script import plot_result
 
 import pickle
+import wandb
 
 
 
@@ -276,7 +277,20 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
             ep_count += 1
             #environment.pass_count(environment, message=f"Ep : {ep_count}")
             rl_glue.rl_episode(experiment_parameters["timeout"])
+
+            # Get data from episode
             episode_reward = rl_glue.rl_agent_message("get_sum_reward")
+            fuel_limit, time_limit, impossible_dt, impossible_binary_flag = rl_glue.environment.get_term_reason()
+                    
+            # wand logging
+            if track_wandb:
+                wandb.log({
+                    "episode reward": episode_reward ,
+                    "fuel limit": fuel_limit,
+                    "time limit": time_limit,
+                    "impossible_dt": impossible_dt,
+                    "impossible_binary_flag": impossible_binary_flag,
+                })
 
             
 
@@ -338,6 +352,17 @@ if __name__ == "__main__":
     
 
     current_agent = Agent
+
+    # Setup wandb
+    global track_wandb
+    track_wandb = True
+    if track_wandb:
+        wandb.login()
+        wandb.init(
+            project="ADR Mission Planning",
+            config = agent_parameters
+        )
+
     run_experiment(current_env , current_agent , environment_parameters , agent_parameters , experiment_parameters)
 
     plot_result(["expected_sarsa_agent"])

@@ -11,7 +11,10 @@ class State:
         self.binary_flags = np.zeros(total_n_debris).tolist()
         self.binary_flags[self.current_removing_debris] = 1
 
-    def transition_function(self , env, action): # Looks like it works
+    def transition_function(self , env, action, debug = True): # Looks like it works
+        
+        print(' --- Taking action: ', action) if debug else None
+
         self.removal_step += 1
         self.number_debris_left -= 1
         self.dt_left -= action[1]

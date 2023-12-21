@@ -1,0 +1,26 @@
+2023-12-21 12:02:57,158 INFO    MainThread:12700 [wandb_setup.py:_flush():76] Current SDK version is 0.16.1
+2023-12-21 12:02:57,158 INFO    MainThread:12700 [wandb_setup.py:_flush():76] Configure stats pid to 12700
+2023-12-21 12:02:57,158 INFO    MainThread:12700 [wandb_setup.py:_flush():76] Loading settings from /Users/hugoderohanwillner/.config/wandb/settings
+2023-12-21 12:02:57,158 INFO    MainThread:12700 [wandb_setup.py:_flush():76] Loading settings from /Users/hugoderohanwillner/Documents/MSc AI/Lab Project/ADR_Mission_Planning/ADR_mission_planning/wandb/settings
+2023-12-21 12:02:57,158 INFO    MainThread:12700 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2023-12-21 12:02:57,158 INFO    MainThread:12700 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'Complete.py', 'program_abspath': '/Users/hugoderohanwillner/Documents/MSc AI/Lab Project/ADR_Mission_Planning/ADR_mission_planning/Complete.py', 'program': 'Complete.py'}
+2023-12-21 12:02:57,158 INFO    MainThread:12700 [wandb_init.py:_log_setup():524] Logging user logs to /Users/hugoderohanwillner/Documents/MSc AI/Lab Project/ADR_Mission_Planning/ADR_mission_planning/wandb/run-20231221_120257-jna6hwn1/logs/debug.log
+2023-12-21 12:02:57,158 INFO    MainThread:12700 [wandb_init.py:_log_setup():525] Logging internal logs to /Users/hugoderohanwillner/Documents/MSc AI/Lab Project/ADR_Mission_Planning/ADR_mission_planning/wandb/run-20231221_120257-jna6hwn1/logs/debug-internal.log
+2023-12-21 12:02:57,158 INFO    MainThread:12700 [wandb_init.py:init():564] calling init triggers
+2023-12-21 12:02:57,158 INFO    MainThread:12700 [wandb_init.py:init():571] wandb.init called with sweep_config: {}
+config: {'network_config': {'state_dim': 15, 'num_hidden_units': 256, 'num_actions': 300, 'weights_file': None}, 'optimizer_config': {'step_size': 0.001, 'beta_m': 0.9, 'beta_v': 0.999, 'epsilon': 1e-08}, 'replay_buffer_size': 500000, 'minibatch_size': 8, 'num_replay_updates_per_step': 4, 'gamma': 0.99, 'tau': 0.001}
+2023-12-21 12:02:57,158 INFO    MainThread:12700 [wandb_init.py:init():614] starting backend
+2023-12-21 12:02:57,158 INFO    MainThread:12700 [wandb_init.py:init():618] setting up manager
+2023-12-21 12:02:57,159 INFO    MainThread:12700 [backend.py:_multiprocessing_setup():105] multiprocessing start_methods=spawn,fork,forkserver, using: spawn
+2023-12-21 12:02:57,160 INFO    MainThread:12700 [wandb_init.py:init():624] backend started and connected
+2023-12-21 12:02:57,162 INFO    MainThread:12700 [wandb_init.py:init():716] updated telemetry
+2023-12-21 12:02:57,170 INFO    MainThread:12700 [wandb_init.py:init():749] communicating run to backend with 90.0 second timeout
+2023-12-21 12:02:57,617 INFO    MainThread:12700 [wandb_run.py:_on_init():2254] communicating current version
+2023-12-21 12:02:57,732 INFO    MainThread:12700 [wandb_run.py:_on_init():2263] got version response 
+2023-12-21 12:02:57,733 INFO    MainThread:12700 [wandb_init.py:init():800] starting run threads in backend
+2023-12-21 12:02:59,306 INFO    MainThread:12700 [wandb_run.py:_console_start():2233] atexit reg
+2023-12-21 12:02:59,306 INFO    MainThread:12700 [wandb_run.py:_redirect():2088] redirect: wrap_raw
+2023-12-21 12:02:59,306 INFO    MainThread:12700 [wandb_run.py:_redirect():2153] Wrapping output streams.
+2023-12-21 12:02:59,306 INFO    MainThread:12700 [wandb_run.py:_redirect():2178] Redirects installed.
+2023-12-21 12:02:59,306 INFO    MainThread:12700 [wandb_init.py:init():841] run started, returning control to user process
+2023-12-21 12:03:49,426 WARNING MsgRouterThr:12700 [router.py:message_loop():77] message_loop has been closed

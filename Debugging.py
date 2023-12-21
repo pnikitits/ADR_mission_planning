@@ -10,23 +10,20 @@ env = env_class()
 env.env_init()
 
 # Testing the action space
-action_key = 25
+action_key = 7*30+2
 print(env.action_space[action_key])
 action = env.action_space[action_key]
 
-# Test update debris pos
-print(env.debris_list[9].mean_anomaly)
-print(env.debris_list[0].angular_velocity)
-env.update_debris_pos(action)
-print(env.debris_list[0].mean_anomaly)
 
-# Test datareader
-# debris_list = DataReader.make_Iridium_debris()
-# print(debris_list[0].a)
-# print(debris_list[0].mean_anomaly)
-# print(debris_list[0].angular_velocity)
+# action_space_var = env.action_space.values()
+# for i, action in enumerate(action_space_var):
+    
+#     if i % 30 == 5:
+#         print(i)
+#         reward = env.calculate_reward(action)
 
-# Test state transition
-env.state.transition_function(env, action)
-
-print()
+# Check env step
+reward, state, is_term = env.env_step(action_key)
+print('reward: ', reward)
+print('state: ', state)
+print('is terminal: ', is_term)

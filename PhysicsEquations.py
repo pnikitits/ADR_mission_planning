@@ -83,7 +83,7 @@ def hohmann_time(r1 , r2 , G=G , M=M):
 
 
 
-def phase_time(otv , target , G=G , M=M , debug_msg=True):
+def phase_time(otv , target , G=G , M=M , debug_msg=False):
     
     mu = G*M                    # N * M^2 / KG
     r1 = round(otv.a , 2)                  # M

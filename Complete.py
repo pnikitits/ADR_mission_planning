@@ -44,7 +44,7 @@ class ActionValueNetwork:
     def get_action_values(self , s):
         W0 , b0 = self.weights[0]["W"] , self.weights[0]["b"]
         #print("S in get_action_value =" , s)
-        print("Shapes - W0:", W0.shape, "s:", s.shape, "b0:", b0.shape)
+        # print("Shapes - W0:", W0.shape, "s:", s.shape, "b0:", b0.shape)
         
 
         psi = np.dot(s , W0) + b0
@@ -317,7 +317,7 @@ if __name__ == "__main__":
     
 
     experiment_parameters = {"num_runs":1,
-                             "num_episodes":3000,
+                             "num_episodes":501,
                              "timeout":2000}
     environment_parameters = {}
     current_env = ADR_Environment

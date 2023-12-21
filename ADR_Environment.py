@@ -11,11 +11,12 @@ class ADR_Environment(BaseEnvironment):
         
 
     def env_init(self , env_info={}):
-        self.total_n_debris = 10
+        self.total_n_debris = 10 # TODO gets len debris after datareader
         self.dv_max_per_mission = 100
         self.dt_max_per_mission = 365
         self.dt_max_per_transfer = 30
-        self.first_debris = 4
+        self.first_debris = 0
+        self.debug = True
 
         self.debris_list = []
         
@@ -112,6 +113,9 @@ class ADR_Environment(BaseEnvironment):
 
         observation = self.env_init()
         print(observation)
+
+        print('\n ----- Starting Episode ---- \n') if self.debug else None
+
         return (reward, observation, is_terminal)
 
     def update_debris_pos(self, action):
@@ -135,7 +139,14 @@ class ADR_Environment(BaseEnvironment):
         is_terminal = self.is_terminal(action)
 
         self.state.transition_function(self, action)
-        
+
+        if self.debug:
+            print(' -------- Current state ------')
+            print(self.state.to_list())
+            print(' --- BINARY FLAGS -- ')
+            print(self.state.binary_flags)
+
+
         return (reward, self.state.to_list(), is_terminal)
 
 

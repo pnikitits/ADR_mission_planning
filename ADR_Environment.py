@@ -129,14 +129,14 @@ class ADR_Environment(BaseEnvironment):
         reward = self.calculate_reward(action)
 
         # Propagate debris positions
-        self.update_debris_pos(self, action)
+        self.update_debris_pos(action)
 
         # Check if terminal
-        is_terminal = self.is_terminal(self.state)
+        is_terminal = self.is_terminal(action)
 
         self.state.transition_function(self, action)
         
-        return (reward, self.state, is_terminal)
+        return (reward, self.state.to_list(), is_terminal)
 
 
 

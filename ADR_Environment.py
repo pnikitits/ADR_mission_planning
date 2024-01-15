@@ -3,6 +3,7 @@ import numpy as np
 from State import State
 from PhysicsEquations import *
 from Debris import Debris
+import random
 
 
 class ADR_Environment(BaseEnvironment):
@@ -17,10 +18,9 @@ class ADR_Environment(BaseEnvironment):
         self.debug_list = [0, 0, 0, 0]
 
         self.total_n_debris = 10 # TODO gets len debris after datareader
-        self.dv_max_per_mission = 20
-        self.dt_max_per_mission = 70
+        self.dv_max_per_mission = 15
+        self.dt_max_per_mission = 50
         self.dt_max_per_transfer = 30
-        self.first_debris = 0
         self.debris_list = []
         
         # Init randomly for testing
@@ -28,6 +28,11 @@ class ADR_Environment(BaseEnvironment):
 
         self.action_space = self.action_dict()
         self.action_space_len = len(self.action_space)
+
+        # Init starting debris
+        # Randomly select first debris using rand to ignore seed
+        # self.first_debris = random.randint(0, self.total_n_debris-1)
+        self.first_debris = 0
 
         # Initial values
         self.state = State(removal_step = 0 ,
@@ -38,6 +43,13 @@ class ADR_Environment(BaseEnvironment):
         
         observation = self.env_observe_state()
         self.last_observation = observation
+
+        # Debug
+        if self.debug:
+            print('Ordered Radii:')
+            for debris in self.debris_list:
+                print(debris.a)
+
         return observation
 
 

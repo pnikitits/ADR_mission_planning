@@ -1,0 +1,92 @@
+No input weights, start from scratch
+ENV START
+[0, 10, 10, 35, 0, 1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ ----- Starting Episode ----
+ --- Taking action:  (5, 6)
+radii 8282285.751537849 8316837.7338915905
+ -------- Current state ------
+[1, 9, 9.992496918447491, 29, 5, 1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ --- BINARY FLAGS --
+[1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ --- Taking action:  (5, 6)
+radii 8316837.7338915905 8316837.7338915905
+ -------- Current state ------
+[2, 8, 9.992496918447491, 23, 5, 1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ --- BINARY FLAGS --
+[1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ENV START
+[0, 10, 10, 35, 0, 1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ ----- Starting Episode ----
+ --- Taking action:  (5, 6)
+radii 8282285.751537849 8316837.7338915905
+ -------- Current state ------
+[1, 9, 9.992496918447491, 29, 5, 1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ --- BINARY FLAGS --
+[1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ --- Taking action:  (5, 6)
+radii 8316837.7338915905 8316837.7338915905
+ -------- Current state ------
+[2, 8, 9.992496918447491, 23, 5, 1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ --- BINARY FLAGS --
+[1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ENV START
+[0, 10, 10, 35, 0, 1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ ----- Starting Episode ----
+ --- Taking action:  (5, 6)
+radii 8282285.751537849 8316837.7338915905
+ -------- Current state ------
+[1, 9, 9.992496918447491, 29, 5, 1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ --- BINARY FLAGS --
+[1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ --- Taking action:  (5, 6)
+radii 8316837.7338915905 8316837.7338915905
+ -------- Current state ------
+[2, 8, 9.992496918447491, 23, 5, 1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ --- BINARY FLAGS --
+[1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ENV START
+[0, 10, 10, 35, 0, 1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ ----- Starting Episode ----
+ --- Taking action:  (5, 6)
+radii 8282285.751537849 8316837.7338915905
+ -------- Current state ------
+[1, 9, 9.992496918447491, 29, 5, 1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ --- BINARY FLAGS --
+[1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ --- Taking action:  (5, 6)
+radii 8316837.7338915905 8316837.7338915905
+ -------- Current state ------
+[2, 8, 9.992496918447491, 23, 5, 1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ --- BINARY FLAGS --
+[1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ENV START
+[0, 10, 10, 35, 0, 1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ ----- Starting Episode ----
+ --- Taking action:  (5, 6)
+radii 8282285.751537849 8316837.7338915905
+ -------- Current state ------
+[1, 9, 9.992496918447491, 29, 5, 1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ --- BINARY FLAGS --
+[1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ --- Taking action:  (5, 6)
+radii 8316837.7338915905 8316837.7338915905
+ -------- Current state ------
+[2, 8, 9.992496918447491, 23, 5, 1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ --- BINARY FLAGS --
+[1, 0.0, 0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.0, 0.0]
+ENV START
+[0, 10, 10, 35, 0, 1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ ----- Starting Episode ----
+  1%|█▌                                                                                                                                                              | 5/501 [00:00<00:20, 24.22it/s]
+Traceback (most recent call last):
+  File "Complete.py", line 366, in <module>
+    run_experiment(current_env , current_agent , environment_parameters , agent_parameters , experiment_parameters)
+  File "Complete.py", line 279, in run_experiment
+    rl_glue.rl_episode(experiment_parameters["timeout"])
+  File "/Users/hugoderohanwillner/Documents/MSc AI/Lab Project/ADR_Mission_Planning/ADR_mission_planning/rl_glue.py", line 190, in rl_episode
+    rl_step_result = self.rl_step()
+  File "/Users/hugoderohanwillner/Documents/MSc AI/Lab Project/ADR_Mission_Planning/ADR_mission_planning/rl_glue.py", line 130, in rl_step
+    (reward, last_state, term) = self.environment.env_step(self.last_action)
+  File "/Users/hugoderohanwillner/Documents/MSc AI/Lab Project/ADR_Mission_Planning/ADR_mission_planning/ADR_Environment.py", line 139, in env_step
+    action = self.action_space[action_key]
+KeyError: 290

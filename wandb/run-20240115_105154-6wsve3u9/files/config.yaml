@@ -1,0 +1,53 @@
+wandb_version: 1
+
+network_config:
+  desc: null
+  value:
+    state_dim: 15
+    num_hidden_units: 256
+    num_actions: 300
+    weights_file: null
+optimizer_config:
+  desc: null
+  value:
+    step_size: 0.001
+    beta_m: 0.9
+    beta_v: 0.999
+    epsilon: 1.0e-08
+replay_buffer_size:
+  desc: null
+  value: 500000
+minibatch_size:
+  desc: null
+  value: 8
+num_replay_updates_per_step:
+  desc: null
+  value: 4
+gamma:
+  desc: null
+  value: 0.99
+tau:
+  desc: null
+  value: 0.001
+_wandb:
+  desc: null
+  value:
+    python_version: 3.8.18
+    cli_version: 0.16.1
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    start_time: 1705312314.080252
+    t:
+      1:
+      - 55
+      2:
+      - 55
+      3:
+      - 16
+      - 23
+      4: 3.8.18
+      5: 0.16.1
+      8:
+      - 4
+      - 5
+      13: darwin-arm64

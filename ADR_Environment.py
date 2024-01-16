@@ -201,18 +201,17 @@ class ADR_Environment(BaseEnvironment):
         n = 10
         min_a = 200+6371
         max_a = 2000+6371
-        min_mean_anomaly = 0
-        max_mean_anomaly = 360
+        
 
         output = []
         for _ in range(n):
             debris = Debris(norad=None,
-                            inclination=None,
-                            raan=None,
-                            eccentricity=0,
-                            arg_perigee=None,
-                            mean_anomaly=np.random.uniform(min_mean_anomaly, max_mean_anomaly),
-                            a=np.random.uniform(min_a, max_a),
+                            inclination  = np.random.uniform(0, 180),
+                            raan         = np.random.uniform(0, 360),
+                            eccentricity = 0,
+                            arg_perigee  = np.random.uniform(0, 360),
+                            mean_anomaly = np.random.uniform(0, 360),
+                            a            = np.random.uniform(min_a, max_a),
                             rcs=None)
             output.append(debris)
 

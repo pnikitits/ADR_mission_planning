@@ -36,50 +36,6 @@ def hohmann_time(r1 , r2 , G=G , M=M):
     return th
 
 
-"""def phase_time_OLD(otv , target , G=G , M=M):
-    
-    #Time to wait until at right angle diff to start the hohmann transfer
-    #du is angle when to start
-    #Correction de phase_time, assuming r1 < r2
-    
-    mu = G*M
-
-    r1 = otv.a
-    r2 = target.a
-
-
-    init_ang_1 = otv.mean_anomaly
-    init_ang_2 = target.mean_anomaly
-
-    angle_diff = init_ang_2 - init_ang_1
-    du = delta_u(r1 , r2)
-
-
-    if angle_diff < du:
-        angle_diff += 360
-
-    ang_vel_1 = np.sqrt( mu/(r1**3) )
-    ang_vel_2 = np.sqrt( mu/(r2**3) )
-
-    if ang_vel_1 == ang_vel_2:
-        dt = 0
-    else:
-        # Angles in degrees and angular velocities in degrees/day
-        dt = (du - angle_diff) / (ang_vel_2 - ang_vel_1)
-    
-    if dt>0 and r2 > r1:
-        print('radii')
-        print(r1, r2)
-        print('angles')
-        print(otv.mean_anomaly, target.mean_anomaly)
-        print('delta u')
-        print(du)
-        print('phase time')
-        print(dt)
-
-    return dt"""
-
-
 
 
 
@@ -171,3 +127,70 @@ def Cv(r1, r2 , G=G , M=M):
     # Return dv
     return dv
 
+
+
+"""
+1. Boost -> drift orbit
+    (Hohmann_1 + inclination_1) dv_comb_1
+
+2. Boost pour rester sur drift orbit
+    (Hohmann_1_p) dv_H1_p
+
+3. Drift
+
+4. Boost -> target orbit
+    (Hohmann_2 + inclination_2) dv_comb_2
+
+5. Boost pour rester sur target orbit
+    (Hohmann_2_p) dv_H2_p
+"""
+
+
+def dv_H (r1 , r2 , mu):
+    """
+    Hohmann 1st boost
+    """
+    return np.sqrt(mu/r1) * ( np.sqrt( 2*r2 / (r1+r2) ) - 1 )
+
+
+def dv_H_p (r1 , r2 , mu):
+    """
+    Hohmann 2nd boost
+    """
+    return np.sqrt(mu/r2) * ( 1 - np.sqrt( 2*r1 / (r1+r2) ) )
+
+
+def dv_comb (r1 , r2 , mu , v1 , dI):
+    """
+    Hohmann boost with inclination change
+    """
+    v2 = v1 + dv_H(r1=r1 , r2=r2 , mu=mu)
+    return np.sqrt( v1**2 + v2**2 - 2*v1*v2 * np.cos(dI) )
+    
+
+
+def dv_sum (debris_1 , debris_2 , ad , Id):
+    mu = G*M
+
+    r_initial = debris_1.a
+    I_initial = debris_1.inclination
+
+    r_final = debris_2.a
+    I_final = debris_2.inclination
+
+
+    # 1.
+    dv_comb_1 = dv_comb()
+
+    # 2.
+    dv_H1_p = dv_H_p()
+
+    # 4.
+    dv_comb_2 = dv_comb()
+
+    # 5.
+    dv_H2_p = dv_H_p()
+
+
+    total = dv_comb_1 + dv_H1_p + dv_comb_2 + dv_H2_p
+    pass

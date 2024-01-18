@@ -129,21 +129,9 @@ def Cv(r1, r2 , G=G , M=M):
 
 
 
-"""
-1. Boost -> drift orbit
-    (Hohmann_1 + inclination_1) dv_comb_1
 
-2. Boost pour rester sur drift orbit
-    (Hohmann_1_p) dv_H1_p
+# ----------------------
 
-3. Drift
-
-4. Boost -> target orbit
-    (Hohmann_2 + inclination_2) dv_comb_2
-
-5. Boost pour rester sur target orbit
-    (Hohmann_2_p) dv_H2_p
-"""
 
 
 def dv_H (r1 , r2 , mu):
@@ -169,7 +157,32 @@ def dv_comb (r1 , r2 , mu , v1 , dI):
     
 
 
-def dv_sum (debris_1 , debris_2 , ad , Id):
+def dv_sum (debris_1 , debris_2 , ad , Id , v1):
+    """
+    - debris_1: initial orbital parameters
+    - debris_2: target orbital parameters
+    - ad: semi-major axis of drift orbit
+    - Id: inclination of drift orbit
+    - v1: ?
+    """
+
+
+    """
+    1. Boost -> drift orbit
+        (Hohmann_1 + inclination_1) dv_comb_1
+
+    2. Boost pour rester sur drift orbit
+        (Hohmann_1_p) dv_H1_p
+
+    3. Drift
+
+    4. Boost -> target orbit
+        (Hohmann_2 + inclination_2) dv_comb_2
+
+    5. Boost pour rester sur target orbit
+        (Hohmann_2_p) dv_H2_p
+    """
+
     mu = G*M
 
     r_initial = debris_1.a
@@ -180,17 +193,18 @@ def dv_sum (debris_1 , debris_2 , ad , Id):
 
 
     # 1.
-    dv_comb_1 = dv_comb()
+    dI = Id - I_initial
+    dv_comb_1 = dv_comb(r1=r_initial , r2=ad , mu=mu , v1=v1 , dI=dI)
 
     # 2.
-    dv_H1_p = dv_H_p()
+    dv_H1_p = dv_H_p(r1=r_initial , r2=ad , mu=mu)
 
     # 4.
-    dv_comb_2 = dv_comb()
+    dI = I_final - Id
+    dv_comb_2 = dv_comb(r1=ad , r2=r_final , mu=mu , v1=v1 , dI=dI)
 
     # 5.
-    dv_H2_p = dv_H_p()
+    dv_H2_p = dv_H_p(r1=ad , r2=r_final , mu=mu)
 
 
-    total = dv_comb_1 + dv_H1_p + dv_comb_2 + dv_H2_p
-    pass
+    return dv_comb_1 + dv_H1_p + dv_comb_2 + dv_H2_p

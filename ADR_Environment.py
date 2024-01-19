@@ -31,8 +31,8 @@ class ADR_Environment(BaseEnvironment):
 
         # Init starting debris
         # Randomly select first debris using rand to ignore seed
-        # self.first_debris = random.randint(0, self.total_n_debris-1)
-        self.first_debris = 0
+        self.first_debris = random.randint(0, self.total_n_debris-1)
+        # self.first_debris = 0
 
         # Initial values
         self.state = State(removal_step = 0 ,
@@ -79,6 +79,9 @@ class ADR_Environment(BaseEnvironment):
         tr1 = True
         """
         tr1 = False
+        print('hohmann_time: ', hohmann_time(otv.a , target.a)) if self.debug else None
+        print('phase_time: ', phase_time(otv , target)) if self.debug else None
+
         if dt > (hohmann_time(otv.a , target.a)) + phase_time(otv , target):
             tr1 = True
 
@@ -147,22 +150,24 @@ class ADR_Environment(BaseEnvironment):
 
     def env_step(self, action_key):
 
+        print("\n -----  ENV STEP ----- \n") if self.debug else None
+
         # Convert action key from NN into action
         action = self.action_space[action_key]
         
         # Get reward based on action
         reward = self.calculate_reward(action)
 
-        # Propagate debris positions
-        self.update_debris_pos(action)
-
         # Check if terminal
         is_terminal = self.is_terminal(action)
+
+        # Propagate debris positions
+        self.update_debris_pos(action)
 
         self.state.transition_function(self, action)
 
         if self.debug:
-            print(' -------- Current state ------')
+            print(' -------- New state ------')
             print(self.state.to_list())
             print(' --- BINARY FLAGS -- ')
             print(self.state.binary_flags)

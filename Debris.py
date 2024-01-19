@@ -50,6 +50,6 @@ class Debris:
     
 
     # def __repr__(self) -> str:
-    #     return f"Debris [{self.norad} , {self.inclination} , {self.raan} , {self.eccentricity} , 
-    #                      {self.arg_perigee} , {self.mean_anomaly} , {self.a} , {self.rcs}]"
-        
+    #     return (f"Orbit(inclination={self.inclination}, raan={self.raan}, "
+    #             f"eccentricity={self.eccentricity}, arg_perigee={self.arg_perigee}, "
+    #             f"mean_anomaly={self.mean_anomaly}, a={self.a})")

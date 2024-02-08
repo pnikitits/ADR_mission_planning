@@ -1,2 +1,7 @@
 __pycache__/
+.DS_Store/
+results/
+wandb/
 first_try.pickle
+*.pickle
+results.zip

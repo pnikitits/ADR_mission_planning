@@ -2,7 +2,7 @@
 https://github.com/JerrettYang/Iridium-33-17126UTC
 """
 import numpy as np
-from PhysicsEquations import G , M
+from InPlaneEquations import G , M
 
 
 class Debris:

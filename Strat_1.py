@@ -16,7 +16,7 @@ Strategy 1
 All dv in M / S
 """
 
-def strat_1_dv(otv:Debris , target:Debris):
+def strat_1_dv(otv:Debris , target:Debris, debug = True):
     """
     Main function for strat_1, returns the total dv and dt used
     """

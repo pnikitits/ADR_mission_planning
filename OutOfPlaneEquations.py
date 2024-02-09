@@ -22,6 +22,7 @@ def combined_inc_raan_dv(otv:Debris , target:Debris):
     current_v = otv.angular_velocity * otv.a * 86400 # M / SEC
 
     # convert to rad here
+    # TODO ADD MODULO HERE? Getting negative values out
     initial_i = np.deg2rad(otv.inclination)
     target_i = np.deg2rad(target.inclination)
     initial_raan = np.deg2rad(otv.raan)

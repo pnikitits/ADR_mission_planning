@@ -1,8 +1,9 @@
 from environment import BaseEnvironment
 import numpy as np
 from State import State
-from PhysicsEquations import *
+from InPlaneEquations import *
 from Debris import Debris
+from Strat_1 import DT_required, CV
 import random
 
 
@@ -75,14 +76,14 @@ class ADR_Environment(BaseEnvironment):
 
         """
         Min time
-        check if dt > hohmann_t + phase_t:
+        check if action is possible:
         tr1 = True
         """
         tr1 = False
         print('hohmann_time: ', hohmann_time(otv.a , target.a)) if self.debug else None
         print('phase_time: ', phase_time(otv , target)) if self.debug else None
 
-        if dt > (hohmann_time(otv.a , target.a)) + phase_time(otv , target):
+        if dt > DT_required(otv, target):
             tr1 = True
 
         """
@@ -108,11 +109,8 @@ class ADR_Environment(BaseEnvironment):
         tr4 = True
         """
         tr4 = False
-        if (self.state.dv_left - hohmann_dv(otv.a , target.a)) > 0:
+        if (self.state.dv_left - CV(otv, target)) > 0:
             tr4 = True
-
-        # if not (tr1 and tr2 and tr3 and tr4):
-        #     self.debug_list = [tr1, tr2, tr3, tr4]
         
         
         self.debug_list = [tr1, tr2, tr3, tr4]
@@ -211,10 +209,10 @@ class ADR_Environment(BaseEnvironment):
         output = []
         for _ in range(n):
             debris = Debris(norad=None,
-                            inclination  = np.random.uniform(0, 180),
-                            raan         = np.random.uniform(0, 360),
+                            inclination  = 0,
+                            raan         = 0,
                             eccentricity = 0,
-                            arg_perigee  = np.random.uniform(0, 360),
+                            arg_perigee  = 0,
                             mean_anomaly = np.random.uniform(0, 360),
                             a            = np.random.uniform(min_a, max_a),
                             rcs=None)

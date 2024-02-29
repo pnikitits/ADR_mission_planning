@@ -18,18 +18,32 @@ def simple_phase(object:Debris , target_anomaly):
     return phase_t # time in days
 
 
+# def combined_inc_raan_dv(otv:Debris , target:Debris):
+#     current_v = otv.angular_velocity * otv.a * 86400 # M / SEC
+
+#     # convert to rad here
+#     # TODO ADD MODULO HERE? Getting negative values out
+#     initial_i = np.deg2rad(otv.inclination)
+#     target_i = np.deg2rad(target.inclination)
+#     initial_raan = np.deg2rad(otv.raan)
+#     target_raan = np.deg2rad(target.raan)
+
+#     d_i = target_i - initial_i
+#     d_raan = target_raan - initial_raan
+#     total_dv = current_v * (d_i + np.sin(initial_i) * d_raan)
+
+#     return total_dv
+
+
 def combined_inc_raan_dv(otv:Debris , target:Debris):
-    current_v = otv.angular_velocity * otv.a * 86400 # M / SEC
 
-    # convert to rad here
-    # TODO ADD MODULO HERE? Getting negative values out
-    initial_i = np.deg2rad(otv.inclination)
-    target_i = np.deg2rad(target.inclination)
-    initial_raan = np.deg2rad(otv.raan)
-    target_raan = np.deg2rad(target.raan)
+    v1 = otv.angular_velocity * otv.a / 86400**2 # M / SEC # CHECK THIS
 
-    d_i = target_i - initial_i
-    d_raan = target_raan - initial_raan
-    total_dv = current_v * (d_i + np.sin(initial_i) * d_raan)
+    raan1 = np.deg2rad(otv.raan)
+    raan2 = np.deg2rad(target.raan)
+    inc1 = np.deg2rad(otv.inclination)
+    inc2 = np.deg2rad(target.inclination)
 
-    return total_dv
+    d_raan = raan2 - raan1
+    theta = np.arccos( np.cos(d_raan)*np.sin(inc1)*np.sin(inc2) + np.cos(inc1)*np.cos(inc2) )
+    return 2*v1*np.sin(theta/2)

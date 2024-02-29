@@ -42,6 +42,7 @@ def strat_1_dv(otv:Debris , target:Debris, debug = True):
 
     # Total
     dv_total = dv_inc_raan + dv_hohmann
+    print(f"dv_inc_raan={dv_inc_raan} , dv_hohmann={dv_hohmann}") if debug else None
     dt_total = dt_i + dt_raan + phase_hohmann + dt_hohmann
 
     return dv_total , dt_total

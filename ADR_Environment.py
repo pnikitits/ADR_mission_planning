@@ -3,7 +3,7 @@ import numpy as np
 from State import State
 from InPlaneEquations import *
 from Debris import Debris
-from Strat_1 import DT_required, CV
+from Strat_1 import strat_1_dv#DT_required, CV
 import random
 
 
@@ -15,12 +15,12 @@ class ADR_Environment(BaseEnvironment):
     def env_init(self , env_info={}):
 
         # Debugging
-        self.debug = True
+        self.debug = False
         self.debug_list = [0, 0, 0, 0]
 
         self.total_n_debris = 10 # TODO gets len debris after datareader
-        self.dv_max_per_mission = 15
-        self.dt_max_per_mission = 50
+        self.dv_max_per_mission = 30
+        self.dt_max_per_mission = 100
         self.dt_max_per_transfer = 30
         self.debris_list = []
         
@@ -74,16 +74,18 @@ class ADR_Environment(BaseEnvironment):
         otv = self.debris_list[self.state.current_removing_debris]
         target = self.debris_list[next_debris_index]
 
+
+        DV_required , DT_required = strat_1_dv(otv=otv , target=target , debug=True)
         """
         Min time
         check if action is possible:
         tr1 = True
         """
-        tr1 = False
         print('hohmann_time: ', hohmann_time(otv.a , target.a)) if self.debug else None
         print('phase_time: ', phase_time(otv , target)) if self.debug else None
 
-        if dt > DT_required(otv, target):
+        tr1 = False
+        if dt > DT_required:
             tr1 = True
 
         """
@@ -109,7 +111,7 @@ class ADR_Environment(BaseEnvironment):
         tr4 = True
         """
         tr4 = False
-        if (self.state.dv_left - CV(otv, target)) > 0:
+        if (self.state.dv_left - DV_required) > 0:
             tr4 = True
         
         
@@ -209,8 +211,8 @@ class ADR_Environment(BaseEnvironment):
         output = []
         for _ in range(n):
             debris = Debris(norad=None,
-                            inclination  = 0,
-                            raan         = 0,
+                            inclination  = np.random.uniform(0, 180),
+                            raan         = np.random.uniform(0, 360),
                             eccentricity = 0,
                             arg_perigee  = 0,
                             mean_anomaly = np.random.uniform(0, 360),

@@ -1,6 +1,6 @@
 import numpy as np
-#from State import State
-# from Debris import Debris
+from astropy import units as u
+from astropy import constants as const
 
 """
 Physics Equations :
@@ -14,11 +14,11 @@ dv  hohmann boost (dv1 + dv2)
 th  hohmann boost duration
 """
 
-G = 6.67e-11 # N * M^2 / KG^2
-M = 5.97e24  # KG
+G = const.G
+M = const.M_earth
 
 
-def hohmann_dv(r1 , r2 , G=G , M=M):
+def hohmann_dv(r1 , r2):
     # Indepent of moving up or down
     mu = G*M
 
@@ -26,87 +26,50 @@ def hohmann_dv(r1 , r2 , G=G , M=M):
     dv2 = np.sqrt(mu/r2)*(np.sqrt(2*r1/(r1+r2))-1)
 
     dv = dv1 + dv2
-    return dv
+    return dv.to(u.m/u.s)
 
 
-def hohmann_time(r1 , r2 , G=G , M=M):
+def hohmann_time(r1 , r2):
     # Indepent of moving up or down
     mu = G*M
-    th = np.pi * np.sqrt( ((r1+r2)**3) / (8*mu) ) / 86400 #Convert to days
-    return th
+    th = np.pi * np.sqrt( ((r1+r2)**3) / (8*mu) )
+    return th.to(u.s)
 
 
 
 
 
-def phase_time(otv , target , G=G , M=M , debug_msg=False):
+def phase_time(otv , target):
     
-    mu = G*M                    # N * M^2 / KG
-    r1 = round(otv.a , 2)                  # M
-    r2 = round(target.a , 2)               # M
-    ang_1 = round(otv.mean_anomaly , 2)    # DEG
-    ang_2 = round(target.mean_anomaly , 2) # DEG
-
-    #if r1 > r2:
-    #    debug_msg = True
-
-
-    print("\n--- Phase Time ---\n") if debug_msg else None
+    r1 = otv.a.to(u.m)
+    r2 = target.a.to(u.m)
+    ang_1 = otv.mean_anomaly.to(u.rad)
+    ang_2 = target.mean_anomaly.to(u.rad)
+    
     # Check orbits
     if r1 == r2:
-        print("SAME ORBIT") if debug_msg else None
-        print("\n------ END -------\n") if debug_msg else None
         return 0
-    elif r1 < r2:
-        print("GO UP:" , r1 , r2) if debug_msg else None
-    elif r1 > r2:
-        print("GO DOWN:" , r1 , r2) if debug_msg else None
     
-
     # delta_u
     du = delta_u(r1 , r2)
-    print("DU:" , round(du , 2)) if debug_msg else None
     if r1 > r2:
         reverse_du = delta_u(r2 , r1)
-        print("Reverse DU:" , round(reverse_du , 2)) if debug_msg else None
         du = reverse_du
 
-
     # angle diff
-    angle_diff = round(ang_2 - ang_1 , 2)
+    angle_diff = ang_2 - ang_1
     
-    if angle_diff > 0:
-        print(f"ang_1 < ang_2 : {ang_1}° < {ang_2}° | diff : {angle_diff}") if debug_msg else None
-    elif angle_diff < 0:
-        print(f"ang_1 > ang_2 : {ang_1}° > {ang_2}° | diff : {angle_diff}") if debug_msg else None
-    elif angle_diff == 0:
-        print(f"same angle | diff : {angle_diff}") if debug_msg else None
-
     if r1 < r2 and angle_diff < du:
-        angle_diff += 360
-        print("modified angle diff +360° :" , angle_diff) if debug_msg else None
+        angle_diff += 2*np.pi * u.rad
     elif r1 > r2 and angle_diff > du:
-        angle_diff -= 360
-        print("modified angle diff -360° :" , angle_diff) if debug_msg else None
+        angle_diff -= 2*np.pi * u.rad
     
-
-
-
-
-
     # angle velocity
-    ang_vel_1 = round(otv.angular_velocity , 2)    # Deg / Day
-    ang_vel_2 = round(target.angular_velocity , 2) # Deg / Day
-    print(f"ang_vel: {ang_vel_1} | {ang_vel_2}") if debug_msg else None
+    ang_vel_1 = otv.angular_velocity.to(u.rad / u.s)
+    ang_vel_2 = target.angular_velocity.to(u.rad / u.s)
 
     # phasing time
     dt = (du - angle_diff) / (ang_vel_2 - ang_vel_1)
-    if dt < 0:
-        print(f"--------------------------------------------------------> phasing time: {round(dt , 2)}") if debug_msg else None
-    else:
-        print(f"phasing time: {round(dt , 2)}") if debug_msg else None
-
-    print("\n------ END -------\n") if debug_msg else None
     return dt
 
 
@@ -115,14 +78,17 @@ def phase_time(otv , target , G=G , M=M , debug_msg=False):
 
 
 def delta_u(r1 , r2):
-    # Return in degrees
-    return np.rad2deg(np.pi * (1 - np.sqrt( (r1+r2) / (2*r2) )))
+    return np.pi * (1 - np.sqrt( (r1+r2) / (2*r2) )) * u.rad
 
 
 
-def Cv(r1, r2 , G=G , M=M):
+def Cv(r1, r2):
     # Compute dv(r1 , r2)
-    dv = hohmann_dv(r1=r1 , r2=r2 , G=G , M=M)
+    dv = hohmann_dv(r1=r1 , r2=r2)
 
     # Return dv
     return dv
+
+
+# if __name__ == "__main__":
+#     print(hohmann_time(r1=6400*u.km , r2=6500*u.km))

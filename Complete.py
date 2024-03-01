@@ -17,6 +17,8 @@ from plot_script import plot_result
 import pickle
 import wandb 
 
+from astropy import units as u
+
 
 
 # Part 1
@@ -215,11 +217,14 @@ class Agent(BaseAgent):
     
     
     def agent_start(self , state):
-        #print("State in agent_start =" , state)
+        print("State in agent_start =" , state[1])
+
         self.sum_rewards = 0
         self.episode_steps = 0
         self.last_state = np.array([state[1]])
-        #print("AFTER MODIF =" , self.last_state)
+
+        # print("AFTER MODIF =" , self.last_state)
+
         self.last_action = self.policy(self.last_state)
         return self.last_action
     

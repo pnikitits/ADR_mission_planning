@@ -3,6 +3,7 @@ https://github.com/JerrettYang/Iridium-33-17126UTC
 """
 import numpy as np
 from InPlaneEquations import G , M
+from astropy import units as u
 
 
 class Debris:
@@ -12,28 +13,28 @@ class Debris:
         # ID
         self.norad = norad
 
-        # Angle between orbital plane and Earth equator plane - DEGREES
+        # Angle between orbital plane and Earth equator plane
         self.inclination = inclination
 
-        # Right ascension of ascending node (orientation of orbital plane) - DEGREES
+        # Right ascension of ascending node (orientation of orbital plane)
         self.raan = raan
 
-        # 0 for circular orbit, 0<e<1 for ellipic orbit - DEGREES
+        # 0 for circular orbit, 0<e<1 for ellipic orbit
         self.eccentricity = eccentricity
 
-        # Location of closest approach wrt ascending node - DEGREES
+        # Location of closest approach wrt ascending node
         self.arg_perigee = arg_perigee
 
-        # Angular position in orbit (from perigee) - DEGREES
+        # Angular position in orbit (from perigee)
         self.mean_anomaly = mean_anomaly
 
-        # Semi-major axis - converted to METRES
-        self.a = a*1000
+        # Semi-major axis
+        self.a = a
 
-        # Radar cross section - M^2
+        # Radar cross section
         self.rcs = rcs
 
-        # Init angular velocity - DEGREES / DAY
+        # Init angular velocity
         self.angular_velocity = self.init_velocity()
 
 
@@ -41,12 +42,13 @@ class Debris:
     def update(self , dt):
         # Update position after timestep
         self.mean_anomaly += self.angular_velocity * dt
-        self.mean_anomaly = self.mean_anomaly%360
+        self.mean_anomaly = self.mean_anomaly.to(u.deg)%(360*u.deg)
 
     def init_velocity(self):
-        # Find the angular velocity -  DEGREES / DAY
-        rad_vel = np.sqrt(G*M / (self.a**3)) * 86400 # convert seconds to days
-        return np.rad2deg(rad_vel)
+        # Find the angular velocity
+        a = self.a.to(u.m)
+        rad_vel = np.sqrt(G*M / (a**3)) * u.rad
+        return rad_vel
     
 
     # def __repr__(self) -> str:

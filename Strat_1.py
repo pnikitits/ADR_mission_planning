@@ -3,6 +3,7 @@ import numpy as np
 from InPlaneEquations import G , M , phase_time
 from OutOfPlaneEquations import simple_phase, combined_inc_raan_dv
 from InPlaneEquations import hohmann_dv, hohmann_time
+from astropy import units as u
 
 mu = G*M
 
@@ -16,7 +17,7 @@ Strategy 1
 All dv in M / S
 """
 
-def strat_1_dv(otv:Debris , target:Debris, debug = True):
+def strat_1_dv(otv:Debris , target:Debris, debug = False):
     """
     Main function for strat_1, returns the total dv and dt used
     """
@@ -58,12 +59,12 @@ def DT_required(otv:Debris , target:Debris):
 
 
 def phase_for_i(otv:Debris):
-    t_0 = simple_phase(object=otv , target_anomaly=0)
-    t_180 = simple_phase(object=otv , target_anomaly=180)
+    t_0 = simple_phase(object=otv , target_anomaly=0*u.deg)
+    t_180 = simple_phase(object=otv , target_anomaly=180*u.deg)
     return min(t_0 , t_180)
 
 
 def phase_for_raan(otv:Debris):
-    t_90 = simple_phase(object=otv , target_anomaly=90)
-    t_270 = simple_phase(object=otv , target_anomaly=270)
+    t_90 = simple_phase(object=otv , target_anomaly=90*u.deg)
+    t_270 = simple_phase(object=otv , target_anomaly=270*u.deg)
     return min(t_90 , t_270)

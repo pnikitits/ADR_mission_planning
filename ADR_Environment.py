@@ -6,6 +6,8 @@ from Debris import Debris
 from Strat_1 import strat_1_dv#DT_required, CV
 import random
 
+from astropy import units as u
+
 
 class ADR_Environment(BaseEnvironment):
     def init(self):
@@ -19,9 +21,9 @@ class ADR_Environment(BaseEnvironment):
         self.debug_list = [0, 0, 0, 0]
 
         self.total_n_debris = 10 # TODO gets len debris after datareader
-        self.dv_max_per_mission = 30
-        self.dt_max_per_mission = 100
-        self.dt_max_per_transfer = 30
+        self.dv_max_per_mission = 30# * u.km / u.s
+        self.dt_max_per_mission = 100# * u.day
+        self.dt_max_per_transfer = 30# * u.day
         self.debris_list = []
         
         # Init randomly for testing
@@ -75,7 +77,7 @@ class ADR_Environment(BaseEnvironment):
         target = self.debris_list[next_debris_index]
 
 
-        DV_required , DT_required = strat_1_dv(otv=otv , target=target , debug=True)
+        DV_required , DT_required = strat_1_dv(otv=otv , target=target , debug=False)
         """
         Min time
         check if action is possible:
@@ -85,7 +87,7 @@ class ADR_Environment(BaseEnvironment):
         print('phase_time: ', phase_time(otv , target)) if self.debug else None
 
         tr1 = False
-        if dt > DT_required:
+        if dt * u.day > DT_required:
             tr1 = True
 
         """
@@ -110,8 +112,9 @@ class ADR_Environment(BaseEnvironment):
         check if next_state_dv_left > 0
         tr4 = True
         """
+        
         tr4 = False
-        if (self.state.dv_left - DV_required) > 0:
+        if (self.state.dv_left * (u.km/u.s) - DV_required) > 0:
             tr4 = True
         
         
@@ -145,7 +148,7 @@ class ADR_Environment(BaseEnvironment):
     def update_debris_pos(self, action):
         # Iterate through debris list to update positions
         for debris in self.debris_list:
-            debris.update(action[1])
+            debris.update(action[1]*u.day)
 
 
     def env_step(self, action_key):
@@ -204,19 +207,19 @@ class ADR_Environment(BaseEnvironment):
         np.random.seed(42)
 
         n = 10
-        min_a = 200+6371
-        max_a = 2000+6371
+        min_a = 6371 + 200
+        max_a = 6371 + 2000
         
 
         output = []
         for _ in range(n):
             debris = Debris(norad=None,
-                            inclination  = np.random.uniform(0, 180),
-                            raan         = np.random.uniform(0, 360),
+                            inclination  = np.random.uniform(0, 10) * u.deg, # (0, 180)
+                            raan         = np.random.uniform(0, 10) * u.deg, # (0, 360)
                             eccentricity = 0,
                             arg_perigee  = 0,
-                            mean_anomaly = np.random.uniform(0, 360),
-                            a            = np.random.uniform(min_a, max_a),
+                            mean_anomaly = np.random.uniform(0, 360) * u.deg,
+                            a            = np.random.uniform(min_a, max_a) * u.km,
                             rcs=None)
             output.append(debris)
 

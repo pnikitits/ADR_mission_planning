@@ -20,8 +20,11 @@ class ADR_Environment(BaseEnvironment):
         self.debug = False
         self.debug_list = [0, 0, 0, 0]
 
+        self.fuel_uses_in_episode = [] # to log the fuel use
+        self.time_uses_in_episode = []
+
         self.total_n_debris = 10 # TODO gets len debris after datareader
-        self.dv_max_per_mission = 30# * u.km / u.s
+        self.dv_max_per_mission = 1# * u.km / u.s
         self.dt_max_per_mission = 100# * u.day
         self.dt_max_per_transfer = 30# * u.day
         self.debris_list = []
@@ -119,6 +122,10 @@ class ADR_Environment(BaseEnvironment):
         
         
         self.debug_list = [tr1, tr2, tr3, tr4]
+
+        if (tr1 and tr2 and tr3 and tr4):
+            self.fuel_uses_in_episode.append(DV_required.to(u.m/u.s).value)
+            self.time_uses_in_episode.append(DT_required.to(u.s).value)
 
         return (tr1 and tr2 and tr3 and tr4)
 
@@ -232,4 +239,16 @@ class ADR_Environment(BaseEnvironment):
         impossible_binary_flag = hash(not self.debug_list[2])
         fuel_limit = hash(not self.debug_list[3])
 
-        return fuel_limit, time_limit, impossible_dt, impossible_binary_flag 
+        return fuel_limit, time_limit, impossible_dt, impossible_binary_flag
+    
+    def get_fuel_use_average(self):
+        if len(self.fuel_uses_in_episode) > 0:
+            return np.mean(self.fuel_uses_in_episode)
+        else:
+            return 0
+        
+    def get_time_use_average(self):
+        if len(self.time_uses_in_episode) > 0:
+            return np.mean(self.time_uses_in_episode)
+        else:
+            return 0

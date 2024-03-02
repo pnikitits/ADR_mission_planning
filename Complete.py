@@ -286,7 +286,8 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
             # Get data from episode
             episode_reward = rl_glue.rl_agent_message("get_sum_reward")
             fuel_limit, time_limit, impossible_dt, impossible_binary_flag = rl_glue.environment.get_term_reason()
-                    
+            avg_fuel_used = rl_glue.environment.get_fuel_use_average()
+            avg_time_used = rl_glue.environment.get_time_use_average()
             # wand logging
             if track_wandb:
                 wandb.log({
@@ -295,6 +296,8 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
                     "time limit": time_limit,
                     "impossible_dt": impossible_dt,
                     "impossible_binary_flag": impossible_binary_flag,
+                    "average fuel used":avg_fuel_used,
+                    "average time used":avg_time_used
                 })
 
             

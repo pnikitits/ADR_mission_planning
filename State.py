@@ -1,5 +1,6 @@
 import numpy as np
 from Strat_1 import CV
+from astropy import units as u
 
 class State:
     def __init__(self , removal_step , total_n_debris , dv_max_per_mission , dt_max_per_mission , first_debris):
@@ -21,7 +22,8 @@ class State:
         # Get the current and target debris
         otv = env.debris_list[self.current_removing_debris]
         target = env.debris_list[action[0]]
-        self.dv_left -= CV(otv, target)
+
+        self.dv_left -= CV(otv, target).to(u.km/u.s).value
         # Update current removing debris after computing CB
         self.current_removing_debris = action[0]
         self.binary_flags[self.current_removing_debris] = 1

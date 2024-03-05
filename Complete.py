@@ -17,6 +17,8 @@ from plot_script import plot_result
 import pickle
 import wandb 
 
+from astropy import units as u
+
 
 
 # Part 1
@@ -215,11 +217,14 @@ class Agent(BaseAgent):
     
     
     def agent_start(self , state):
-        #print("State in agent_start =" , state)
+        print("State in agent_start =" , state[1])
+
         self.sum_rewards = 0
         self.episode_steps = 0
         self.last_state = np.array([state[1]])
-        #print("AFTER MODIF =" , self.last_state)
+
+        # print("AFTER MODIF =" , self.last_state)
+
         self.last_action = self.policy(self.last_state)
         return self.last_action
     
@@ -281,7 +286,8 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
             # Get data from episode
             episode_reward = rl_glue.rl_agent_message("get_sum_reward")
             fuel_limit, time_limit, impossible_dt, impossible_binary_flag = rl_glue.environment.get_term_reason()
-                    
+            avg_fuel_used = rl_glue.environment.get_fuel_use_average()
+            avg_time_used = rl_glue.environment.get_time_use_average()
             # wand logging
             if track_wandb:
                 wandb.log({
@@ -290,6 +296,8 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
                     "time limit": time_limit,
                     "impossible_dt": impossible_dt,
                     "impossible_binary_flag": impossible_binary_flag,
+                    "average fuel used":avg_fuel_used,
+                    "average time used":avg_time_used
                 })
 
             

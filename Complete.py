@@ -363,7 +363,7 @@ if __name__ == "__main__":
 
     # Setup wandb
     global track_wandb
-    track_wandb = False
+    track_wandb = True
     if track_wandb:
         wandb.login()
         wandb.init(

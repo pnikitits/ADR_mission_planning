@@ -4,7 +4,7 @@ from poliastro.bodies import Earth
 from poliastro.twobody import Orbit
 from poliastro.plotting import OrbitPlotter3D
 
-import CustomManeuvres
+import Simulator.CustomManeuvres as CustomManeuvres
 
 import copy
 import numpy as np
@@ -46,10 +46,9 @@ class Simulator:
         2. Raan
         3. Hohmann
         """
+
         # Set the target from the action
         target_debris = self.debris_list[action[0]].poliastro_orbit
-        
-        
 
         # ---- Inclination change
         inc_change = CustomManeuvres.simple_inc_change(self.otv_orbit, target_debris)
@@ -103,12 +102,11 @@ class Simulator:
 
         # Propagate with the extra time after the action
         extra_time = action[1] * u.day - min_time
-        print(extra_time)
+        # print(extra_time)
         # if extra_time.value > 0:
         #     self.otv_orbit = self.otv_orbit.propagate(extra_time)
         #     for i , debris in enumerate(self.debris_list):
         #         self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(extra_time)
-
 
         return total_dv , min_time
 

@@ -1,14 +1,18 @@
-"""Custom Orbital maneuvers.
-
 """
+Custom Orbital maneuvers.
+"""
+
+import numpy as np
 from astropy import units as u
-from CustomLowLevel import hohmann_any_angle
+
 from poliastro.maneuver import Maneuver
 from poliastro.twobody.orbit import Orbit
-from InPlanePhysics import delta_u
-from poliastro.util import norm
 from poliastro.core.elements import coe_rotation_matrix, rv2coe
-import numpy as np
+from poliastro.util import norm
+
+from Simulator.CustomLowLevel import hohmann_any_angle
+from Simulator.InPlanePhysics import delta_u
+
 
 # Helper functioms
 def to_mean(nu, argp):

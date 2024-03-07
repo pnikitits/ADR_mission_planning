@@ -28,6 +28,10 @@ class ADR_Environment(BaseEnvironment):
         self.dt_max_per_mission = 100# * u.day
         self.dt_max_per_transfer = 30# * u.day
         self.debris_list = []
+
+        # self.action_is_legal = None
+        # self.DV_required = None
+        # self.DT_required = None
         
         # Init randomly for testing
         self.init_random_debris()
@@ -37,8 +41,8 @@ class ADR_Environment(BaseEnvironment):
 
         # Init starting debris
         # Randomly select first debris using rand to ignore seed
-        self.first_debris = random.randint(0, self.total_n_debris-1)
-        # self.first_debris = 0
+        self.first_debris = 0 # random.randint(0, self.total_n_debris-1)
+        
 
         # Initial values
         self.state = State(removal_step = 0 ,
@@ -139,7 +143,7 @@ class ADR_Environment(BaseEnvironment):
     
 
     def env_start(self):
-        print("ENV START")
+        print("\nENV START\n")
         reward = 0.0
         is_terminal = False
 

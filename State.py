@@ -1,5 +1,5 @@
 import numpy as np
-from Strat_1 import CV
+from Strat_1 import CV , strat_1_dv
 from astropy import units as u
 
 class State:
@@ -14,7 +14,7 @@ class State:
 
     def transition_function(self , env, action, debug = True): # Looks like it works
         
-        print(' --- Taking action: ', action) if debug else None
+        #print(' --- Taking action: ', action) if debug else None
 
         self.removal_step += 1
         self.number_debris_left -= 1
@@ -22,6 +22,12 @@ class State:
         # Get the current and target debris
         otv = env.debris_list[self.current_removing_debris]
         target = env.debris_list[action[0]]
+
+        dv_log , dt_log = strat_1_dv(otv , target , debug=True)
+        print(f"--- Taking action {action}: 'dv={dv_log} , dt={dt_log}")
+
+        print(f"{otv}")
+        print(f"{target}")
 
         self.dv_left -= CV(otv, target).to(u.km/u.s).value
         # Update current removing debris after computing CB

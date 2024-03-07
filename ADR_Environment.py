@@ -5,6 +5,7 @@ from InPlaneEquations import *
 from Debris import Debris
 from Strat_1 import strat_1_dv#DT_required, CV
 import random
+from Simulator.Simulator import Simulator
 
 from astropy import units as u
 
@@ -27,14 +28,14 @@ class ADR_Environment(BaseEnvironment):
         self.dv_max_per_mission = 1# * u.km / u.s
         self.dt_max_per_mission = 100# * u.day
         self.dt_max_per_transfer = 30# * u.day
-        self.debris_list = []
-
-        # self.action_is_legal = None
-        # self.DV_required = None
-        # self.DT_required = None
         
-        # Init randomly for testing
-        self.init_random_debris()
+
+        self.simulator = Simulator(starting_index=1 , n_debris=self.total_n_debris)
+
+        self.action_is_legal = None
+        
+        
+        
 
         self.action_space = self.action_dict()
         self.action_space_len = len(self.action_space)
@@ -54,11 +55,7 @@ class ADR_Environment(BaseEnvironment):
         observation = self.env_observe_state()
         self.last_observation = observation
 
-        # Debug
-        if self.debug:
-            print('Ordered Radii:')
-            for debris in self.debris_list:
-                print(debris.a)
+        
 
         return observation
 
@@ -75,26 +72,18 @@ class ADR_Environment(BaseEnvironment):
         
 
 
-    def is_legal(self , action):
+    def is_legal(self , action , cv , dt_min):
         # input is state before transition
 
-        next_debris_index , dt = action
-
-        otv = self.debris_list[self.state.current_removing_debris]
-        target = self.debris_list[next_debris_index]
-
-
-        DV_required , DT_required = strat_1_dv(otv=otv , target=target , debug=False)
+        next_debris_index , dt_action = action
         """
         Min time
         check if action is possible:
         tr1 = True
         """
-        print('hohmann_time: ', hohmann_time(otv.a , target.a)) if self.debug else None
-        print('phase_time: ', phase_time(otv , target)) if self.debug else None
 
         tr1 = False
-        if dt * u.day > DT_required:
+        if dt_action * u.day > dt_min:
             tr1 = True
 
         """
@@ -103,7 +92,7 @@ class ADR_Environment(BaseEnvironment):
         tr2 = True
         """
         tr2 = False
-        if (self.state.dt_left - dt) > 0:
+        if (self.state.dt_left - dt_action) > 0:
             tr2 = True
 
         """
@@ -121,15 +110,15 @@ class ADR_Environment(BaseEnvironment):
         """
         
         tr4 = False
-        if (self.state.dv_left * (u.km/u.s) - DV_required) > 0:
+        if (self.state.dv_left * (u.km/u.s) - cv) > 0:
             tr4 = True
         
         
         self.debug_list = [tr1, tr2, tr3, tr4]
 
         if (tr1 and tr2 and tr3 and tr4):
-            self.fuel_uses_in_episode.append(DV_required.to(u.m/u.s).value)
-            self.time_uses_in_episode.append(DT_required.to(u.s).value)
+            self.fuel_uses_in_episode.append(cv.to(u.m/u.s).value)
+            self.time_uses_in_episode.append(dt_min.to(u.s).value)
 
         return (tr1 and tr2 and tr3 and tr4)
 
@@ -166,9 +155,13 @@ class ADR_Environment(BaseEnvironment):
 
         print("\n -----  ENV STEP ----- \n") if self.debug else None
 
-        # Convert action key from NN into action
+        # Convert action key from NN into action (next_debris_norad_id , dt_given)
         action = self.action_space[action_key]
         
+        # Use the simulator to compute the maneuvre fuel and time and propagate
+        cv , dt_min = self.simulator.simulate_action(action)
+
+        self.action_is_legal = self.is_legal(action , cv , dt_min)
         # Get reward based on action
         reward = self.calculate_reward(action)
 
@@ -178,7 +171,7 @@ class ADR_Environment(BaseEnvironment):
         # Propagate debris positions
         self.update_debris_pos(action)
 
-        self.state.transition_function(self, action)
+        self.state.transition_function(self, action , cv)
 
         if self.debug:
             print(' -------- New state ------')

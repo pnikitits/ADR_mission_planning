@@ -18,9 +18,9 @@ class Debris:
 
 
 class Simulator:
-    def __init__(self , starting_index=1):
+    def __init__(self , starting_index=1 , n_debris=10):
         # Initialise the debris dictionary and assign the otv to an Orbit
-        self.debris_list = self.init_random_debris() 
+        self.debris_list = self.init_random_debris(n=n_debris) 
         self.otv_orbit = copy.copy(self.debris_list[starting_index].poliastro_orbit)
         
 
@@ -98,13 +98,23 @@ class Simulator:
 
         # Total resources used
         total_dv = hoh_change.get_total_cost() + raan_change.get_total_cost() + inc_change.get_total_cost()
-        total_time = hoh_change.get_total_time() + raan_change.get_total_time() + inc_change.get_total_time()
-
-        return total_dv , total_time
+        min_time = hoh_change.get_total_time() + raan_change.get_total_time() + inc_change.get_total_time()
 
 
+        # Propagate with the extra time after the action
+        extra_time = action[1] * u.day - min_time
+        print(extra_time)
+        # if extra_time.value > 0:
+        #     self.otv_orbit = self.otv_orbit.propagate(extra_time)
+        #     for i , debris in enumerate(self.debris_list):
+        #         self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(extra_time)
 
-    def init_random_debris(self , n=10):
+
+        return total_dv , min_time
+
+
+
+    def init_random_debris(self , n):
         """
         Output:
             list (norad_id , Orbit)

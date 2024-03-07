@@ -217,7 +217,7 @@ class Agent(BaseAgent):
     
     
     def agent_start(self , state):
-        print("State in agent_start =" , state[1])
+        #print("State in agent_start =" , state[1])
 
         self.sum_rewards = 0
         self.episode_steps = 0
@@ -339,7 +339,7 @@ if __name__ == "__main__":
     
 
     experiment_parameters = {"num_runs":1,
-                             "num_episodes":2000,
+                             "num_episodes":1,
                              "timeout":2000}
     environment_parameters = {}
     current_env = ADR_Environment
@@ -363,7 +363,7 @@ if __name__ == "__main__":
 
     # Setup wandb
     global track_wandb
-    track_wandb = True
+    track_wandb = False
     if track_wandb:
         wandb.login()
         wandb.init(

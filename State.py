@@ -12,7 +12,7 @@ class State:
         self.binary_flags = np.zeros(total_n_debris).tolist()
         self.binary_flags[self.current_removing_debris] = 1
 
-    def transition_function(self , action ,  cv , dt_min , debug = True): # Looks like it works
+    def transition_function(self , action ,  cv , dt_min , debug = False): # Looks like it works
         
         
 
@@ -20,7 +20,7 @@ class State:
         self.number_debris_left -= 1
         self.dt_left -= action[1] # NOT dt_min ?
         
-        print(f"--- Taking action {action}: 'dv={cv} , dt={dt_min}")
+        print(f"--- Taking action {action}: 'dv={cv} , dt={dt_min}") if debug else None
 
         # print(f"{otv}")
         # print(f"{target}")

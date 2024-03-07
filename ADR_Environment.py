@@ -111,14 +111,14 @@ class ADR_Environment(BaseEnvironment):
     
 
     def env_start(self):
-        print("\nENV START\n")
+        # print("\nENV START\n")
         reward = 0.0
         is_terminal = False
 
         # values update
 
         observation = self.env_init()
-        print(observation)
+        # print(observation)
 
         print('\n ----- Starting Episode ---- \n') if self.debug else None
 

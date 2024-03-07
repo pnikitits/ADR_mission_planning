@@ -339,7 +339,7 @@ if __name__ == "__main__":
     
 
     experiment_parameters = {"num_runs":1,
-                             "num_episodes":1,
+                             "num_episodes":5000,
                              "timeout":2000}
     environment_parameters = {}
     current_env = ADR_Environment

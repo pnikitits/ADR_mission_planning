@@ -12,24 +12,20 @@ class State:
         self.binary_flags = np.zeros(total_n_debris).tolist()
         self.binary_flags[self.current_removing_debris] = 1
 
-    def transition_function(self , env, action, debug = True): # Looks like it works
+    def transition_function(self , action ,  cv , dt_min , debug = False): # Looks like it works
         
-        #print(' --- Taking action: ', action) if debug else None
+        
 
         self.removal_step += 1
         self.number_debris_left -= 1
-        self.dt_left -= action[1]
-        # Get the current and target debris
-        otv = env.debris_list[self.current_removing_debris]
-        target = env.debris_list[action[0]]
+        self.dt_left -= action[1] # NOT dt_min ?
+        
+        print(f"--- Taking action {action}: 'dv={cv} , dt={dt_min}") if debug else None
 
-        dv_log , dt_log = strat_1_dv(otv , target , debug=True)
-        print(f"--- Taking action {action}: 'dv={dv_log} , dt={dt_log}")
+        # print(f"{otv}")
+        # print(f"{target}")
 
-        print(f"{otv}")
-        print(f"{target}")
-
-        self.dv_left -= CV(otv, target).to(u.km/u.s).value
+        self.dv_left -= cv.to(u.km/u.s).value
         # Update current removing debris after computing CB
         self.current_removing_debris = action[0]
         self.binary_flags[self.current_removing_debris] = 1

@@ -339,7 +339,7 @@ if __name__ == "__main__":
     
 
     experiment_parameters = {"num_runs":1,
-                             "num_episodes":1,
+                             "num_episodes":5000,
                              "timeout":2000}
     environment_parameters = {}
     current_env = ADR_Environment
@@ -363,7 +363,7 @@ if __name__ == "__main__":
 
     # Setup wandb
     global track_wandb
-    track_wandb = False
+    track_wandb = True
     if track_wandb:
         wandb.login()
         wandb.init(

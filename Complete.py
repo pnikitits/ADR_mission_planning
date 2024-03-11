@@ -343,7 +343,7 @@ if __name__ == "__main__":
                              "timeout":2000}
     environment_parameters = {}
     current_env = ADR_Environment
-    agent_parameters = {"network_config":{"state_dim":15,
+    agent_parameters = {"network_config":{"state_dim":25,
                                           "num_hidden_units":256,
                                           "num_actions":300,
                                           "weights_file":weight_file},
@@ -355,7 +355,7 @@ if __name__ == "__main__":
                         "minibatch_size":8,
                         "num_replay_updates_per_step":4,
                         "gamma":0.99,
-                        "tau":0.001}
+                        "tau":0.005}
     
     
 

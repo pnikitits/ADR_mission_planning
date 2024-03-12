@@ -30,8 +30,8 @@ class ADR_Environment(BaseEnvironment):
         self.dt_max_per_transfer = 30 # * u.day
         
         # Init starting debris
-        # self.first_debris = 0  
-        self.first_debris = random.randint(0, self.total_n_debris-1)
+        self.first_debris = 0  
+        # self.first_debris = random.randint(0, self.total_n_debris-1)
 
         self.simulator = Simulator(starting_index=self.first_debris , n_debris=self.total_n_debris)
 
@@ -167,6 +167,9 @@ class ADR_Environment(BaseEnvironment):
 
         # Check if terminal
         is_terminal = not self.action_is_legal
+
+        # Reset the priority list
+        self.state.priority_list = np.ones(self.total_n_debris).tolist()
 
         # Update the priority list on a random basis
         priority_debris = self.get_priority()

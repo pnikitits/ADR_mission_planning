@@ -203,9 +203,20 @@ class ADR_Environment(BaseEnvironment):
         return dict
     
     def get_priority(self):
+        '''
+            Returns a random debris index to set as priority
+            Taken from the available debris that have not been removed yet
+        '''
         priority_debris = None
-        if random.random() < 0.1:
-            priority_debris = random.randint(0, self.total_n_debris-1)
+
+        # Get the list of indices where the binary flag is 0
+        available_debris = [i for i, flag in enumerate(self.state.binary_flags) if flag == 0]
+
+        if random.random() < 0.3:
+            # Randomly select a debris from the available list
+            priority_debris = random.choice(available_debris)
+
+            # priority_debris = random.randint(0, self.total_n_debris-1)
         return priority_debris
 
     def init_debris(self):

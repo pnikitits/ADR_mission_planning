@@ -44,6 +44,7 @@ class State:
             p_list = self.priority_list
 
         print(f"Priority list: {p_list}")
+        print(f"Binary flags: {self.binary_flags}")
 
         return [self.removal_step , 
                 self.number_debris_left , 

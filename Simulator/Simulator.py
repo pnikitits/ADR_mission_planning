@@ -121,6 +121,8 @@ class Simulator:
         
         debris_list = []
 
+        np.random.seed(42)
+
         for norad_id in range(n):
             min_a = 6371 + 200
             max_a = 6371 + 2000

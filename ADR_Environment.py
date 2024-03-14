@@ -30,7 +30,8 @@ class ADR_Environment(BaseEnvironment):
         self.dt_max_per_transfer = 30 # * u.day
         
         # Init starting debris
-        self.first_debris = 0 # random.randint(0, self.total_n_debris-1)
+        self.first_debris = 0  
+        # self.first_debris = random.randint(0, self.total_n_debris-1)
 
         self.simulator = Simulator(starting_index=self.first_debris , n_debris=self.total_n_debris)
 
@@ -126,8 +127,22 @@ class ADR_Environment(BaseEnvironment):
 
     def update_debris_pos(self, action):
         # Iterate through debris list to update positions
+        # TODO: REMOVE THIS
         for debris in self.debris_list:
             debris.update(action[1]*u.day)
+        
+    def compute_reward(self, action):
+        # Calculate reward using the priority list
+        action_target = action[0]
+        reward = self.state.priority_list[action_target]
+        if reward == 10:
+            print("Selected correct debris: ", action_target)
+
+        # Set reward to 0 if the action is not legal
+        if not self.action_is_legal:
+            reward = 0
+        
+        return reward
 
 
     def env_step(self, action_key):
@@ -147,14 +162,20 @@ class ADR_Environment(BaseEnvironment):
 
         self.action_is_legal = self.is_legal(action , cv , dt_min)
 
-        # Get reward based on action (1 or 0)
-        reward = int(self.action_is_legal)
+        # Get reward based on action
+        reward = self.compute_reward(action)
 
         # Check if terminal
         is_terminal = not self.action_is_legal
 
+        # Reset the priority list
+        self.state.priority_list = np.ones(self.total_n_debris).tolist()
 
-        self.state.transition_function(action=action , cv=cv , dt_min=dt_min)
+        # Update the priority list on a random basis
+        priority_debris = self.get_priority()
+
+        # Update the state
+        self.state.transition_function(action=action , cv=cv , dt_min=dt_min, priority_debris=priority_debris)
 
         if self.debug:
             print(' -------- New state ------')
@@ -181,6 +202,22 @@ class ADR_Environment(BaseEnvironment):
                 i += 1
         return dict
     
+    def get_priority(self):
+        '''
+            Returns a random debris index to set as priority
+            Taken from the available debris that have not been removed yet
+        '''
+        priority_debris = None
+
+        # Get the list of indices where the binary flag is 0
+        available_debris = [i for i, flag in enumerate(self.state.binary_flags) if flag == 0]
+
+        if random.random() < 0.3:
+            # Randomly select a debris from the available list
+            priority_debris = random.choice(available_debris)
+
+            # priority_debris = random.randint(0, self.total_n_debris-1)
+        return priority_debris
 
     def init_debris(self):
         pass

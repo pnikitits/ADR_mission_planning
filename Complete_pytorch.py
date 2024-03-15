@@ -263,6 +263,17 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
         env_info["seed"] = run
         rl_glue.rl_init(agent_info , env_info)
 
+        seed = agent_info["seed"]
+        torch.manual_seed(seed)
+        np.random.seed(seed)
+        random.seed(seed)
+        gpu_use = experiment_parameters['gpu_use']
+        if gpu_use and torch.cuda.is_available():
+            torch.cuda.manual_seed(seed)
+            torch.cuda.manual_seed_all(seed)
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
+
         ep_count = 0
         for episode in tqdm(range(1 , experiment_parameters["num_episodes"]+1)):
             ep_count += 1
@@ -310,7 +321,7 @@ if __name__ == "__main__":
                             "num_episodes":3000,
                             "timeout":2000,
                             "gpu_use":False,
-                            "track_wandb":True}
+                            "track_wandb":False}
     environment_parameters = {}
     current_env = ADR_Environment
     agent_parameters = {"network_config":{"state_dim":25,
@@ -328,17 +339,6 @@ if __name__ == "__main__":
                         "tau":0.001,
                         "seed":0
                         }
-    
-    # Set seed
-    #seed = agent_parameters['seed']
-    #torch.manual_seed(seed)
-    #np.random.seed(seed)
-    #random.seed(seed)
-    #if gpu_use and torch.cuda.is_available():
-        #torch.cuda.manual_seed(seed)
-        #torch.cuda.manual_seed_all(seed)
-        #torch.backends.cudnn.deterministic = True
-        #torch.backends.cudnn.benchmark = False
 
     # Set device
     gpu_use = experiment_parameters['gpu_use']

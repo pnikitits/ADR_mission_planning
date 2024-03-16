@@ -8,24 +8,21 @@ from collections import deque, namedtuple
 import random
 from torch.optim import AdamW
 
-import shutil
-import pickle
 import os
 import wandb
 
 from rl_glue import RLGlue
 from agent import BaseAgent
-from environment import BaseEnvironment
 from ADR_Environment import ADR_Environment
 from plot_script import plot_result
 
 
-class DQN(nn.Module):
+class ActionValueNetwork(nn.Module):
     """
     Action value network
     """
     def __init__(self, network_config):
-        super(DQN, self).__init__()
+        super(ActionValueNetwork, self).__init__()
         self.state_dim = network_config.get("state_dim")
         self.num_hidden_units = network_config.get("num_hidden_units")
         self.num_actions = network_config.get("num_actions")
@@ -46,7 +43,7 @@ class DQN(nn.Module):
         Args:
             - state (torch.tensor) : a 2D tensor of shape (batch_size, state_size)
         Returns:
-            The action-values (torch.tensor) : a 2D tensor of shape (batch_size, num_actions)
+            - The action-values (torch.tensor) : a 2D tensor of shape (batch_size, num_actions)
         """
         x = F.relu(self.l1(state))
         x = F.relu(self.l2(x))
@@ -56,12 +53,14 @@ class DQN(nn.Module):
 
     def select_action(self, state, tau):
         """
-        Forward pass + softmax policy + action sampling. The maximum action-value is substracted from the action-values 
+        Softmax policy. The maximum action-value is substracted from the action-values 
         to stabilize the policy as exponentiating action values can make them very large.
         
         Args:
-        - state (torch.tensor) : a 2D tensor of shape (batch_size, state_size)
-        - tau : temperature argument
+            - state (torch.tensor) : a 2D tensor of shape (batch_size, state_size)
+            - tau : temperature argument
+        Returns:
+            - The action (int) : the action to take (in the range 1-300)
         """
         with torch.no_grad():
             preferences = self.forward(state)
@@ -75,9 +74,11 @@ class DQN(nn.Module):
         action = self.rand_generator.choice(self.num_actions, p=action_probs.detach().numpy().squeeze())
         return action
 
+
 # create a tuple subclass that will be used to store transitions
 Transition = namedtuple('Transition', 
                         ('state', 'action', 'reward', 'terminal', 'next_state'))
+
 
 class ReplayBuffer():
     def __init__(self, size, minibatch_size):
@@ -97,7 +98,7 @@ class ReplayBuffer():
 
 class Agent(BaseAgent):
     """ 
-    link between replay buffer, DQN, Adam
+    Deep Q-Learning Agent with Experience Replay 
     """
     def __init__(self):
         self.name = 'dqn'
@@ -106,8 +107,8 @@ class Agent(BaseAgent):
         self.replay_buffer = ReplayBuffer(agent_config["replay_buffer_size"],
                                           agent_config["minibatch_size"]
                                           )
-        self.policy_network = DQN(agent_config["network_config"])
-        self.target_network = DQN(agent_config["network_config"])
+        self.policy_network = ActionValueNetwork(agent_config["network_config"])
+        self.target_network = ActionValueNetwork(agent_config["network_config"])
         self.optimizer = torch.optim.AdamW(self.policy_network.parameters(),
                               lr = agent_config["optimizer_config"]["step_size"],
                               betas = (agent_config["optimizer_config"]["beta_m"], agent_config["optimizer_config"]["beta_v"]),
@@ -126,9 +127,9 @@ class Agent(BaseAgent):
     def policy(self, state):
         """
         Args:
-            state (Numpy array): the state.
+            - state (Numpy array): the state.
         Returns:
-            the action. 
+            - the action (int).
         """
         state = torch.tensor(state, device = device, dtype = torch.float32)
         action = self.policy_network.select_action(state, self.tau)
@@ -139,10 +140,10 @@ class Agent(BaseAgent):
         The first method called when the experiment starts, called after
         the environment starts.
         Args:
-            state (Numpy array): the state from the
+            - state (Numpy array): the state from the
                 environment's env_start function.
         Returns:
-            The first action the agent takes.
+            - The first action the agent takes (int).
         """
 
         print("State in agent_start =" , state[1])
@@ -159,12 +160,12 @@ class Agent(BaseAgent):
         """
         A step taken by the agent.
         Args:
-            reward (float): the reward received for taking the last action taken
-            state (Numpy array): the state from the
+            - reward (float): the reward received for taking the last action taken
+            - state (Numpy array): the state from the
                 environment's step based, where the agent ended up after the
                 last step
         Returns:
-            The action the agent is taking.
+            - The action the agent is taking (int).
         """
         self.sum_rewards += reward
         self.episode_steps += 1
@@ -188,7 +189,7 @@ class Agent(BaseAgent):
         """
         Run when the agent terminates.
         Args:
-            reward (float): the reward the agent received for entering the
+            - reward (float): the reward the agent received for entering the
                 terminal state.
         """
         self.sum_rewards += reward
@@ -211,29 +212,31 @@ class Agent(BaseAgent):
 
     def optimize_network(self, experiences):
         """
-        loss computation, soft update ......
+        Optimize the policy network using the experiences
         """        
         # transpose the batch from batch-array of transitions to Transition of batch-array
         batch = Transition(*zip(*experiences))
 
-        # concatenate batch elements
+        # transform all batches into tensors
         non_final_mask = torch.tensor([not s for s in batch.terminal], device=device, dtype=torch.int64)
         non_final_next_states = torch.tensor(batch.next_state, device=device, dtype=torch.float32).squeeze(1)
         state_batch = torch.tensor(batch.state, device=device, dtype=torch.float32).squeeze(1)
         action_batch = torch.tensor(batch.action, device=device).unsqueeze(-1)
         reward_batch = torch.tensor(batch.reward, device=device, dtype=torch.float32)
 
-        # state action values = [batch_size, 1]
+        # Compute Q(s_t, a)
         state_action_values = self.policy_network(state_batch).gather(1, action_batch)
 
+        # Compute V(s_{t+1}) for all next states.
         next_state_values = torch.zeros(self.replay_buffer.minibatch_size, device=device)
         with torch.no_grad():
-            next_state_values[non_final_mask] = self.target_network(non_final_next_states).max(1).values 
-        # Compute the expected Q values
+            next_state_values[non_final_mask] = self.target_network(non_final_next_states).max(1).values
+
+        # Compute the expected Q values (TD targets)
         expected_state_action_values = (next_state_values * self.discount) + reward_batch
 
         # Compute Huber loss
-        criterion = nn.SmoothL1Loss() #nn.MSELoss()
+        criterion = nn.SmoothL1Loss()
         loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
 
         # Optimize the model
@@ -249,7 +252,7 @@ class Agent(BaseAgent):
 
 def run_experiment(environment , agent , environment_parameters , agent_parameters , experiment_parameters):
     """
-    agent interacts with environment
+    Run the experiment
     """
 
     rl_glue = RLGlue(environment, agent)
@@ -318,7 +321,7 @@ if __name__ == "__main__":
 
     weights_file = None #'models/test_weights.pth'
     experiment_parameters = {"num_runs":1,
-                            "num_episodes":3000,
+                            "num_episodes":2000,
                             "timeout":2000,
                             "gpu_use":False,
                             "track_wandb":False}
@@ -328,7 +331,7 @@ if __name__ == "__main__":
                                         "num_hidden_units":512,
                                         "num_actions":300,
                                         "weights_file":weights_file},
-                        "optimizer_config":{"step_size":1e-4, # working value 1e-3 # learning rate 
+                        "optimizer_config":{"step_size":1e-4, # working value 1e-3
                                             "beta_m":0.9,
                                             "beta_v":0.999,
                                             "epsilon":1e-8},
@@ -371,10 +374,5 @@ if __name__ == "__main__":
 
 
     ## TO DO ##
-    ## clean le code et le commenter
     ## Hyperparameter optimization
     ## Policy visualisation (+ replay buffer t-sne ?)
-
-    # error 
-    #Complete_pytorch.py:221: UserWarning: Creating a tensor from a list of numpy.ndarrays is extremely slow. Please consider converting the list to a single numpy.ndarray with numpy.array() before converting to a tensor. (Triggered internally at C:\cb\pytorch_1000000000000\work\torch\csrc\utils\tensor_new.cpp:278.)
-    #non_final_next_states = torch.tensor(batch.next_state, device=device, dtype=torch.float32).squeeze(1)

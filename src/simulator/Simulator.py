@@ -23,7 +23,7 @@ class Simulator:
     def __init__(self , starting_index=1 , n_debris=10):
         # Initialise the debris dictionary and assign the otv to an Orbit
         self.debris_list = self.init_random_debris(n=n_debris) 
-        #self.debris_list = self.debris_from_dataset(n=320)
+        #self.debris_list = self.debris_from_dataset(n=320) #le dataset contient 320 debris
         
         self.otv_orbit = copy.copy(self.debris_list[starting_index].poliastro_orbit)
         
@@ -146,7 +146,6 @@ class Simulator:
         Output:
             list (norad_id , Orbit) 
         """
-        debris_list = []
         debris_list = []
         dataset = scipy.io.loadmat('Data/TLE_iridium.mat')['TLE_iridium']
         for i in range(n):

@@ -4,7 +4,7 @@ from poliastro.bodies import Earth
 from poliastro.twobody import Orbit
 from poliastro.plotting import OrbitPlotter3D
 
-import Simulator.CustomManeuvres as CustomManeuvres
+import src.simulator.CustomManeuvres as CustomManeuvres
 
 import copy
 import numpy as np

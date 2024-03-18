@@ -1,5 +1,5 @@
 import scipy.io
-from Debris import Debris
+from environment.Debris import Debris
 
 mat_data = scipy.io.loadmat('Data/TLE_iridium.mat')
 

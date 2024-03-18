@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from rl_glue import RLGlue
-from environment import BaseEnvironment
+from rlglue.rl_glue import RLGlue
+from rlglue.environment import BaseEnvironment
 
 # ARD Envinonment
-from ADR_Environment import ADR_Environment
+from src.environment.ADR_Environment import ADR_Environment
 
-from agent import BaseAgent
+from rlglue.agent import BaseAgent
 from collections import deque
 from copy import deepcopy
 from tqdm import tqdm
@@ -358,7 +358,6 @@ if __name__ == "__main__":
                         "tau":0.01}
     
     
-
     current_agent = Agent
 
     # Setup wandb

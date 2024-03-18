@@ -146,7 +146,7 @@ class Agent(BaseAgent):
             - The first action the agent takes (int).
         """
 
-        print("State in agent_start =" , state[1])
+        #print("State in agent_start =" , state[1])
 
         self.ep_loss = 0
         self.sum_rewards = 0
@@ -170,9 +170,9 @@ class Agent(BaseAgent):
         self.sum_rewards += reward
         self.episode_steps += 1
         state = np.array([state])
-        print('***' * 50)
-        print("state  = ",state)
-        print('***' * 50)
+        #print('***' * 50)
+        #print("state  = ",state)
+        #print('***' * 50)
 
         action = self.policy(state)
         self.replay_buffer.append(self.last_state , self.last_action , reward , 0 , state)
@@ -324,7 +324,7 @@ if __name__ == "__main__":
                             "num_episodes":2000,
                             "timeout":2000,
                             "gpu_use":False,
-                            "track_wandb":False}
+                            "track_wandb":True}
     environment_parameters = {}
     current_env = ADR_Environment
     agent_parameters = {"network_config":{"state_dim":25,
@@ -335,8 +335,8 @@ if __name__ == "__main__":
                                             "beta_m":0.9,
                                             "beta_v":0.999,
                                             "epsilon":1e-8},
-                        "replay_buffer_size":500000,
-                        "minibatch_size":8,
+                        "replay_buffer_size":1000000,
+                        "minibatch_size":64,
                         "num_replay_updates_per_step":4,
                         "gamma":0.99,
                         "tau":0.001,

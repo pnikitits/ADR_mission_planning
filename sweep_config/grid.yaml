@@ -18,6 +18,6 @@ parameters:
   replay_buffer_size:
     values: [250000, 5000000, 1000000, 2000000]
   seed:
-    values: [0, 1]
+    values: [0, 1, 2]
 
 # gamma pertinent ? network architecture à rajouter ?

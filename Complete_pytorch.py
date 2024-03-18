@@ -71,7 +71,11 @@ class ActionValueNetwork(nn.Module):
         reshaped_sum_of_exp_preferences = torch.unsqueeze(sum_of_exp_preferences, 1)
         action_probs = exp_preferences / reshaped_sum_of_exp_preferences
 
-        action = self.rand_generator.choice(self.num_actions, p=action_probs.detach().numpy().squeeze())
+        #action = self.rand_generator.choice(self.num_actions, p=action_probs.detach().numpy().squeeze())
+        #return action
+
+        action = torch.multinomial(action_probs, num_samples=1) # do this on the GPU
+        action = action.item()
         return action
 
 

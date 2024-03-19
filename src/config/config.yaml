@@ -1,0 +1,25 @@
+agent_parameters:
+  network_config:
+    state_dim: 25
+    num_hidden_units: 512
+    num_actions: 300
+  optimizer_config:
+    step_size: 0.0001
+    beta_m: 0.9
+    beta_v: 0.999
+    epsilon: 0.00000001
+  replay_buffer_size: 500000
+  minibatch_size: 64
+  num_replay_updates_per_step: 4
+  gamma: 0.99
+  tau: 0.001
+  seed: 0
+
+experiment_parameters:
+  num_runs: 1
+  num_episodes: 50
+  timeout: 20
+  gpu_use: False
+  track_wandb: True
+
+environment_parameters:

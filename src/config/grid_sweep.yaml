@@ -20,4 +20,4 @@ parameters:
   seed:
     values: [0, 1, 2]
 
-# gamma pertinent ? network architecture à rajouter ?
+# too costly to run

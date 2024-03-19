@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from tqdm import tqdm
 from collections import deque, namedtuple
 import random
 from torch.optim import AdamW
@@ -45,7 +44,7 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
             torch.backends.cudnn.benchmark = False
 
         ep_count = 0
-        for episode in tqdm(range(1 , experiment_parameters["num_episodes"]+1)):
+        for episode in range(1 , experiment_parameters["num_episodes"]+1):
             ep_count += 1
             #environment.pass_count(environment, message=f"Ep : {ep_count}")
             rl_glue.rl_episode(experiment_parameters["timeout"])
@@ -59,8 +58,7 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
             agent_sum_reward[run - 1, episode - 1] = episode_reward
 
             # wand logging
-            if track_wandb:
-                wandb.log({
+            wandb.log({
                     "episode loss": ep_loss,
                     "episode reward": episode_reward ,
                     "fuel limit": fuel_limit,
@@ -70,19 +68,25 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
                     "average fuel used":avg_fuel_used,
                     "average time used":avg_time_used
                 })
- 
-    subfolder = 'models/'
-    model_name = input("model name : ")
-    if not os.path.exists("models"):
-        os.makedirs("models")
-    if model_name != '':
-        torch.save(rl_glue.agent.policy_network.state_dict(), subfolder + model_name +'.pth')
-        print("Model saved as ", model_name)
 
-    save_name = "{}".format(rl_glue.agent.name)
-    if not os.path.exists("results"):
-        os.makedirs("results")
-    np.save("results/sum_reward_{}".format(save_name) , agent_sum_reward)
+    wandb.log({"avg_reward": sum(agent_sum_reward[0])/experiment_parameters["num_episodes"]})
+ 
+    # subfolder = 'models/'
+    # model_name = input("model name : ")
+    # if not os.path.exists("models"):
+    #     os.makedirs("models")
+    # if model_name != '':
+    #     torch.save(rl_glue.agent.policy_network.state_dict(), subfolder + model_name +'.pth')
+    #     print("Model saved as ", model_name)
+
+    # save_name = "{}".format(rl_glue.agent.name)
+    # if not os.path.exists("results"):
+    #     os.makedirs("results")
+    # np.save("results/sum_reward_{}".format(save_name) , agent_sum_reward)
+
+
+
+
 
 if __name__ == "__main__":
 
@@ -137,10 +141,3 @@ if __name__ == "__main__":
         
 
     run_experiment(current_env, current_agent, environment_parameters, agent_parameters, experiment_parameters)
-
-    #plot_result(["dqn"])
-
-
-    ## TO DO ##
-    ## Hyperparameter optimization
-    ## Policy visualisation (+ replay buffer t-sne ?)

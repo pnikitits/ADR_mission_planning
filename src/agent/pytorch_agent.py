@@ -27,8 +27,8 @@ class Agent(BaseAgent):
         self.replay_buffer = ReplayBuffer(agent_config["replay_buffer_size"],
                                           agent_config["minibatch_size"]
                                           )
-        self.policy_network = ActionValueNetwork(agent_config["network_config"])
-        self.target_network = ActionValueNetwork(agent_config["network_config"])
+        self.policy_network = ActionValueNetwork(agent_config["network_config"]).to(self.device)
+        self.target_network = ActionValueNetwork(agent_config["network_config"]).to(self.device)
         self.optimizer = torch.optim.AdamW(self.policy_network.parameters(),
                               lr = agent_config["optimizer_config"]["step_size"],
                               betas = (agent_config["optimizer_config"]["beta_m"], agent_config["optimizer_config"]["beta_v"]),

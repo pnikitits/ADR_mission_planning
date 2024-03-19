@@ -70,7 +70,7 @@ def hohmann_any_angle(k, rv, r_f):
 
     return dv_a, dv_b, t_trans
 
-
+@jit
 def propagate_under_J2_perturbations(orbit:Orbit, transfer_time):
 
     def f(t0, u_, k):

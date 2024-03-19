@@ -11,7 +11,7 @@ pip install -r requirements.txt
 conda env create -f environment.yml
 ```
 
-# Run experiment
+## Run experiment
 To train the agent on the ADR env, run the following command:
 
 ```bash

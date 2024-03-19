@@ -10,7 +10,7 @@ from poliastro.twobody.orbit import Orbit
 from poliastro.core.elements import coe_rotation_matrix, rv2coe
 from poliastro.util import norm
 
-from src.simulator.CustomLowLevel import hohmann_any_angle
+from src.simulator.CustomLowLevel import hohmann_any_angle, propagate_under_J2_perturbations
 from src.simulator.InPlanePhysics import delta_u
 
 
@@ -107,8 +107,8 @@ def hohmann_with_phasing(orbit_i: Orbit, orbit_f: Orbit, debug=True):
     
 
     # Propagate to the first burn
-    orbit_i = orbit_i.propagate(t_1)
-    orbit_f = orbit_f.propagate(t_1)
+    orbit_i = propagate_under_J2_perturbations(orbit_i, t_1)
+    orbit_f = propagate_under_J2_perturbations(orbit_f, t_1)
     
     if debug:
         mean_anomaly_i = (orbit_i.nu + orbit_i.argp) << u.deg
@@ -142,7 +142,7 @@ def simple_inc_change(orbit_i: Orbit, orbit_f: Orbit, debug=True):
     """
     # Compute thrust location
     time_to_thrust, thrust_location = time_to_inc_change(orbit_i)
-    orbit_i = orbit_i.propagate(time_to_thrust)
+    orbit_i = propagate_under_J2_perturbations(orbit_i, time_to_thrust)
 
     # Calculate the thrust value
     v = norm(orbit_i.v << u.m / u.s)
@@ -189,7 +189,7 @@ def simple_raan_change(orbit_i: Orbit, orbit_f: Orbit, debug=True):
     """
     # Compute thrust location and theta
     time_to_thrust, thrust_location, theta = time_to_raan_change(orbit_i, orbit_f)
-    orbit_i = orbit_i.propagate(time_to_thrust)
+    orbit_i = propagate_under_J2_perturbations(orbit_i, time_to_thrust)
 
     # Calculate the thrust value
     v = norm(orbit_i.v << u.m / u.s)

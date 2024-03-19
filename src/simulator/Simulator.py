@@ -5,6 +5,7 @@ from poliastro.twobody import Orbit
 from poliastro.plotting import OrbitPlotter3D
 
 import src.simulator.CustomManeuvres as CustomManeuvres
+from src.simulator.CustomLowLevel import propagate_under_J2_perturbations
 
 import copy
 import numpy as np
@@ -62,7 +63,7 @@ class Simulator:
 
         # Propagate all debris to the end of the transfer
         for i , debris in enumerate(self.debris_list):
-            self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)
+            self.debris_list[i].poliastro_orbit = propagate_under_J2_perturbations(debris.poliastro_orbit, transfer_time)
         
         # Apply the maneuver to the otv
         self.otv_orbit = self.otv_orbit.apply_maneuver(inc_change)
@@ -78,7 +79,7 @@ class Simulator:
 
         # Propagate all debris to the end of the transfer
         for i , debris in enumerate(self.debris_list):
-            self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)
+            self.debris_list[i].poliastro_orbit = propagate_under_J2_perturbations(debris.poliastro_orbit, transfer_time)
         
         # Apply the maneuver to the otv
         self.otv_orbit = self.otv_orbit.apply_maneuver(raan_change)
@@ -93,7 +94,7 @@ class Simulator:
 
         # Propagate all debris to the end of the transfer
         for i , debris in enumerate(self.debris_list):
-            self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)
+            self.debris_list[i].poliastro_orbit = propagate_under_J2_perturbations(debris.poliastro_orbit, transfer_time)
         
         # Apply the maneuver to the otv
         self.otv_orbit = self.otv_orbit.apply_maneuver(hoh_change)

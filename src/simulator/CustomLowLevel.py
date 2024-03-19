@@ -6,7 +6,12 @@ from numpy import cross
 
 from poliastro._math.linalg import norm
 from poliastro.core.elements import coe_rotation_matrix, rv2coe, rv_pqw
-
+from poliastro.bodies import Earth
+from astropy import units as u
+from poliastro.core.perturbations import J2_perturbation
+from poliastro.twobody.propagation import CowellPropagator
+from poliastro.twobody import Orbit
+from poliastro.core.propagation import func_twobody
 
 @jit
 def hohmann_any_angle(k, rv, r_f):
@@ -64,3 +69,18 @@ def hohmann_any_angle(k, rv, r_f):
     t_trans = np.pi * np.sqrt(a_trans**3 / k)
 
     return dv_a, dv_b, t_trans
+
+
+def propagate_under_J2_perturbations(orbit:Orbit, transfer_time):
+
+    def f(t0, u_, k):
+        du_kep = func_twobody(t0, u_, k)
+        ax, ay, az = J2_perturbation(
+            t0, u_, k, J2=Earth.J2.value, R=Earth.R.to(u.km).value
+        )
+        du_ad = np.array([0, 0, 0, ax, ay, az])
+        return du_kep + du_ad
+
+
+    final = orbit.propagate(transfer_time, method=CowellPropagator(f=f))
+    return final

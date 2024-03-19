@@ -147,7 +147,7 @@ class Simulator:
             list (norad_id , Orbit) 
         """
         debris_list = []
-        dataset = scipy.io.loadmat('Data/TLE_iridium.mat')['TLE_iridium']
+        dataset = scipy.io.loadmat('data/TLE_iridium.mat')['TLE_iridium']
         for i in range(n):
             norad_id = dataset[0][i]
             a = dataset[6][i] * u.km 

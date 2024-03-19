@@ -121,6 +121,8 @@ class Simulator:
         Output:
             list (norad_id , Orbit)
         """
+        np.random.seed(42) # !!!
+        
         debris_list = []
 
         np.random.seed(42)

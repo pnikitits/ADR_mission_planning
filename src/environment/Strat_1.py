@@ -1,8 +1,8 @@
-from Debris import Debris
+from src.environment.Debris import Debris
 import numpy as np
-from InPlaneEquations import G , M , phase_time
-from OutOfPlaneEquations import simple_phase, combined_inc_raan_dv
-from InPlaneEquations import hohmann_dv, hohmann_time
+from src.environment.InPlaneEquations import G , M , phase_time
+from src.environment.OutOfPlaneEquations import simple_phase, combined_inc_raan_dv
+from src.environment.InPlaneEquations import hohmann_dv, hohmann_time
 from astropy import units as u
 
 mu = G*M

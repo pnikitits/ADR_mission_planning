@@ -1,4 +1,4 @@
-from Debris import Debris
+from src.environment.Debris import Debris
 import numpy as np
 from astropy import units as u
 

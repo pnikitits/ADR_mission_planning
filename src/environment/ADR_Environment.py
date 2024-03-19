@@ -1,11 +1,11 @@
-from environment import BaseEnvironment
+from src.rlglue.environment import BaseEnvironment
 import numpy as np
-from State import State
-from InPlaneEquations import *
-from Debris import Debris
-from Strat_1 import strat_1_dv#DT_required, CV
+from src.environment.State import State
+from src.environment.InPlaneEquations import *
+from src.environment.Debris import Debris
+from src.environment.Strat_1 import strat_1_dv#DT_required, CV
 import random
-from Simulator.Simulator import Simulator
+from src.simulator.Simulator import Simulator
 
 from astropy import units as u
 
@@ -112,7 +112,7 @@ class ADR_Environment(BaseEnvironment):
     
 
     def env_start(self):
-        # print("\nENV START\n")
+        print("\nENV START\n") if self.debug else None
         reward = 0.0
         is_terminal = False
 
@@ -136,7 +136,7 @@ class ADR_Environment(BaseEnvironment):
         action_target = action[0]
         reward = self.state.priority_list[action_target]
         if reward == 10:
-            print("Selected correct debris: ", action_target)
+            pass#print("Selected correct debris: ", action_target)
 
         # Set reward to 0 if the action is not legal
         if not self.action_is_legal:
@@ -177,11 +177,11 @@ class ADR_Environment(BaseEnvironment):
         # Update the state
         self.state.transition_function(action=action , cv=cv , dt_min=dt_min, priority_debris=priority_debris)
 
-        if self.debug:
-            print(' -------- New state ------')
-            print(self.state.to_list())
-            print(' --- BINARY FLAGS -- ')
-            print(self.state.binary_flags)
+        #if self.debug:
+        #    print(' -------- New state ------')
+        #    print(self.state.to_list())
+        #    print(' --- BINARY FLAGS -- ')
+        #    print(self.state.binary_flags)
 
 
         return (reward, self.state.to_list(), is_terminal)

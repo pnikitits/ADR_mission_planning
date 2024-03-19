@@ -1,5 +1,5 @@
 import numpy as np
-from Strat_1 import CV , strat_1_dv
+from src.environment.Strat_1 import CV , strat_1_dv
 from astropy import units as u
 
 class State:
@@ -19,7 +19,7 @@ class State:
         self.number_debris_left -= 1
         self.dt_left -= action[1] # NOT dt_min ?
         
-        print(f"--- Taking action {action}: 'dv={cv} , dt={dt_min}")
+        #print(f"--- Taking action {action}: 'dv={cv} , dt={dt_min}")
 
         # print(f"{otv}")
         # print(f"{target}")
@@ -32,7 +32,7 @@ class State:
         # Add a higher priority to the selected debris
         if priority_debris != None:
             self.priority_list[priority_debris] = 10
-            print(f"Priority given to {priority_debris}")
+            #print(f"Priority given to {priority_debris}")
 
 
     def to_list(self):
@@ -43,8 +43,8 @@ class State:
         if access_priority_list:
             p_list = self.priority_list
 
-        print(f"Priority list: {p_list}")
-        print(f"Binary flags: {self.binary_flags}")
+        #print(f"Priority list: {p_list}")
+        #print(f"Binary flags: {self.binary_flags}")
 
         return [self.removal_step , 
                 self.number_debris_left , 

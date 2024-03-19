@@ -4,10 +4,12 @@ from poliastro.bodies import Earth
 from poliastro.twobody import Orbit
 from poliastro.plotting import OrbitPlotter3D
 
-import Simulator.CustomManeuvres as CustomManeuvres
+import src.simulator.CustomManeuvres as CustomManeuvres
 
 import copy
 import numpy as np
+
+import scipy.io
 
 
 class Debris:
@@ -21,6 +23,8 @@ class Simulator:
     def __init__(self , starting_index=1 , n_debris=10):
         # Initialise the debris dictionary and assign the otv to an Orbit
         self.debris_list = self.init_random_debris(n=n_debris) 
+        #self.debris_list = self.debris_from_dataset(n=320) #le dataset contient 320 debris
+        
         self.otv_orbit = copy.copy(self.debris_list[starting_index].poliastro_orbit)
         
 
@@ -138,5 +142,25 @@ class Simulator:
 
         return debris_list
     
+    def debris_from_dataset(self, n):
+        """
+        Transform n first debris from the dataset in Debris object
+        Output:
+            list (norad_id , Orbit) 
+        """
+        debris_list = []
+        dataset = scipy.io.loadmat('data/TLE_iridium.mat')['TLE_iridium']
+        for i in range(n):
+            norad_id = dataset[0][i]
+            a = dataset[6][i] * u.km 
+            ecc = dataset[3][i] * u.one
+            inc = dataset[1][i] * u.deg
+            raan = dataset[2][i] * u.deg
+            argp = dataset[4][i] * u.deg
+            nu = dataset[5][i] * u.deg
 
+            debris = Orbit.from_classical(Earth, a, ecc, inc, raan, argp, nu)
+            debris_list.append(Debris(poliastro_orbit=debris , norad_id=norad_id))
+        
+        return debris_list
 

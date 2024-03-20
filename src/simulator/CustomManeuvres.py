@@ -10,8 +10,8 @@ from poliastro.twobody.orbit import Orbit
 from poliastro.core.elements import coe_rotation_matrix, rv2coe
 from poliastro.util import norm
 
-from Simulator.CustomLowLevel import hohmann_any_angle
-from Simulator.InPlanePhysics import delta_u
+from src.simulator.CustomLowLevel import hohmann_any_angle
+from src.simulator.InPlanePhysics import delta_u
 
 
 # Helper functioms

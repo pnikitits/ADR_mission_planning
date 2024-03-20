@@ -1,27 +1,23 @@
 project: "ADR_mission_planning"
 program: wandb_sweep.py
-method: bayes
+method: grid
 metric:
   name: avg_reward
   goal: maximize
 parameters:
   tau:
-    min: 0.001
-    max: 0.1
+    values: [0.001, 0.01, 0.1, 10]
   learning_rate:
-    min: 0.00001
-    max: 0.01
+    values: [0.00001, 0.0001, 0.001, 0.01]
   gamma:
-    min: 0.9
-    max: 1.0
+    values: [0.99, 0.999, 0.9999]
   minibatch_size:
-    min: 4
-    max: 64
+    values: [8, 16, 32, 64]
   replay_updates_per_step:
-    min: 1
-    max: 6
+    values: [2, 4, 6, 8]
   replay_buffer_size:
-    min: 500000
-    max: 5000000
+    values: [250000, 5000000, 1000000, 2000000]
+  seed:
+    values: [0, 1, 2]
 
 # gamma pertinent ? network architecture à rajouter ?

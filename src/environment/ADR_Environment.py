@@ -1,11 +1,11 @@
-from environment import BaseEnvironment
+from src.rlglue.environment import BaseEnvironment
 import numpy as np
-from State import State
-from InPlaneEquations import *
-from Debris import Debris
-from Strat_1 import strat_1_dv#DT_required, CV
+from src.environment.State import State
+from src.environment.InPlaneEquations import *
+from src.environment.Debris import Debris
+from src.environment.Strat_1 import strat_1_dv#DT_required, CV
 import random
-from Simulator.Simulator import Simulator
+from src.simulator.Simulator import Simulator
 
 from astropy import units as u
 

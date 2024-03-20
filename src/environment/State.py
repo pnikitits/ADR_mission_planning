@@ -1,5 +1,5 @@
 import numpy as np
-from Strat_1 import CV , strat_1_dv
+from src.environment.Strat_1 import CV , strat_1_dv
 from astropy import units as u
 
 class State:

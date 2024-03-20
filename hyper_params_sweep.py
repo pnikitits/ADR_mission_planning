@@ -51,16 +51,6 @@ def run_sweeping():
 
 
 
-# if __name__ == "__main__":
-    
-#     with open("src/config/grid_sweep.yaml") as file: # change file name to use different sweep
-#         sweep_configuration = yaml.load(file, Loader=yaml.FullLoader)
-
-#     sweep_id = wandb.sweep(sweep=sweep_configuration, project="HPO-ADR")
-#     wandb.agent(sweep_id, function=main) # count = 20 if bayesian search, nothing if grid search
-
-
-
 
 def main(args):
     parser = argparse.ArgumentParser()

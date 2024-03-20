@@ -139,8 +139,14 @@ class Agent(BaseAgent):
 
         # transform all batches into tensors
         non_final_mask = torch.tensor([not s for s in batch.terminal], device=self.device, dtype=torch.int64)
-        non_final_next_states = torch.tensor(batch.next_state, device=self.device, dtype=torch.float32).squeeze(1)
-        state_batch = torch.tensor(batch.state, device=self.device, dtype=torch.float32).squeeze(1)
+
+        batch_next_state_np = np.stack(batch.next_state)
+        non_final_next_states = torch.from_numpy(batch_next_state_np).to(device=self.device, dtype=torch.float32).squeeze(1)
+
+        batch_state_np = np.stack(batch.state)
+        state_batch = torch.from_numpy(batch_state_np).to(device=self.device, dtype=torch.float32).squeeze(1)
+
+
         action_batch = torch.tensor(batch.action, device=self.device).unsqueeze(-1)
         reward_batch = torch.tensor(batch.reward, device=self.device, dtype=torch.float32)
 

@@ -1,13 +1,15 @@
 import torch
 import wandb
 import yaml
+import sys
+import argparse
 
 from src.environment.ADR_Environment import ADR_Environment
 from src.agent.pytorch_agent import Agent
 from src.trainer.trainer import run_experiment
 
 
-def main():
+def run_sweeping():
     a = wandb.init()
     weights_file = None #'models/test_weights.pth'
     experiment_parameters = {"num_runs":1,
@@ -49,10 +51,52 @@ def main():
 
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     
-    with open("src/config/grid_sweep.yaml") as file: # change file name to use different sweep
-        sweep_configuration = yaml.load(file, Loader=yaml.FullLoader)
+#     with open("src/config/grid_sweep.yaml") as file: # change file name to use different sweep
+#         sweep_configuration = yaml.load(file, Loader=yaml.FullLoader)
 
-    sweep_id = wandb.sweep(sweep=sweep_configuration, project="HPO-ADR")
-    wandb.agent(sweep_id, function=main) # count = 20 if bayesian search, nothing if grid search
+#     sweep_id = wandb.sweep(sweep=sweep_configuration, project="HPO-ADR")
+#     wandb.agent(sweep_id, function=main) # count = 20 if bayesian search, nothing if grid search
+
+
+
+
+def main(args):
+    parser = argparse.ArgumentParser()
+
+    # Argument parser
+    parser.add_argument(
+        "-method",
+        dest="method",
+        type=str,
+        default="bayes",
+        required=False,
+    )
+
+    parser.add_argument(
+        "-nb_sweeps",
+        dest="nb_sweeps",
+        type=int,
+        default=20,
+        required=False,
+    )
+
+    args = parser.parse_args()
+    if args.method == "bayes":
+        with open("./src/config/bayes_sweep.yaml") as file:
+            sweep_configuration = yaml.load(file, Loader=yaml.FullLoader)
+        sweep_id = wandb.sweep(sweep=sweep_configuration, project="HPO-ADR")
+        wandb.agent(sweep_id, function=run_sweeping, count = args.nb_sweeps)
+    elif args.method == "grid":
+        with open("./src/config/grid_sweep.yaml") as file:
+            sweep_configuration = yaml.load(file, Loader=yaml.FullLoader)
+        sweep_id = wandb.sweep(sweep=sweep_configuration, project="HPO-ADR")
+        wandb.agent(sweep_id, function=run_sweeping)
+    else:
+        raise NotImplementedError("Agent not implemented yet.")
+
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

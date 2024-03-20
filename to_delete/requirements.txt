@@ -1,0 +1,5 @@
+python==3.8.18
+torch==2.2.1
+astropy==5.2.2
+poliastro==0.17.0
+wandb==0.16.3

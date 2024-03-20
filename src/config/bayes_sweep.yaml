@@ -9,19 +9,19 @@ parameters:
     min: 0.001
     max: 0.1
   learning_rate:
-    min: 0.00001
-    max: 0.01
+    min: 0.0001
+    max: 0.003
   gamma:
-    min: 0.9
+    min: 0.94
     max: 1.0
   minibatch_size:
-    min: 4
-    max: 64
+    min: 35
+    max: 90
   replay_updates_per_step:
-    min: 1
-    max: 6
+    min: 5
+    max: 8
   replay_buffer_size:
-    min: 500000
-    max: 5000000
+    min: 350000
+    max: 450000
 
 # gamma pertinent ? network architecture à rajouter ?

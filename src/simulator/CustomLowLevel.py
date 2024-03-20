@@ -4,7 +4,7 @@ import numpy as np
 from numba import njit as jit
 from numpy import cross
 
-from poliastro._math.linalg import norm
+#from poliastro._math.linalg import norm # _math ??
 from poliastro.core.elements import coe_rotation_matrix, rv2coe, rv_pqw
 
 
@@ -41,13 +41,13 @@ def hohmann_any_angle(k, rv, r_f):
 
     """
     _, ecc, inc, raan, argp, nu = rv2coe(k, *rv)
-    h_i = norm(cross(*rv))
+    h_i = np.linalg.norm(cross(*rv)) # poliastro._math.linalg or np.linalg ?
     p_i = h_i**2 / k
 
     r_i, v_i = rv_pqw(k, p_i, ecc, nu)
 
-    r_i = norm(r_i)
-    v_i = norm(v_i)
+    r_i = np.linalg.norm(r_i)
+    v_i = np.linalg.norm(v_i)
     a_trans = (r_i + r_f) / 2
 
     dv_a = np.sqrt(2 * k / r_i - k / a_trans) - v_i

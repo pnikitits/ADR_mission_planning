@@ -1,6 +1,7 @@
 import torch
 import wandb
 import yaml
+import time
 
 from src.environment.ADR_Environment import ADR_Environment
 from src.agent.pytorch_agent import Agent
@@ -8,6 +9,8 @@ from src.trainer.trainer import run_experiment
 
 
 if __name__ == "__main__":
+    start_time = time.perf_counter()
+
     current_env = ADR_Environment
     a = wandb.init()
     
@@ -39,4 +42,6 @@ if __name__ == "__main__":
     run_experiment(current_env, current_agent, environment_parameters, agent_parameters, experiment_parameters)
 
 
-
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+    print(f"Elapsed time: {elapsed_time} seconds")

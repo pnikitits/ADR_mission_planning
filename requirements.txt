@@ -1,7 +1,0 @@
-python==3.8.18
-pytorch==2.2.1
-astropy==5.2.2
-poliastro==0.17.0
-ipykernel==6.29.2
-tqdm==4.66.2
-wandb==0.16.3

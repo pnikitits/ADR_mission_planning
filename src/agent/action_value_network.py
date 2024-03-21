@@ -52,22 +52,22 @@ class ActionValueNetwork(nn.Module):
             - The action (int) : the action to take (in the range 1-300)
         """
 
-        with torch.no_grad():
-            preferences = self.forward(state)
-        action_probs = F.softmax(preferences / tau, dim=1)
-        action = torch.multinomial(action_probs, num_samples=1).item()
-        return action
         # with torch.no_grad():
         #     preferences = self.forward(state)
-        # max_pref = torch.max(preferences, axis = 1).values
-        # reshaped_max_pref = torch.unsqueeze(max_pref, 1)
-        # exp_preferences = torch.exp(preferences/tau - reshaped_max_pref/tau)
-        # sum_of_exp_preferences = torch.sum(exp_preferences, dim = 1)
-        # reshaped_sum_of_exp_preferences = torch.unsqueeze(sum_of_exp_preferences, 1)
-        # action_probs = exp_preferences / reshaped_sum_of_exp_preferences
-
-
-        # action = torch.multinomial(action_probs, num_samples=1) # do this on the GPU
-        # action = action.item()
-        # # action = self.rand_generator.choice(self.num_actions, p=action_probs.detach().numpy().squeeze())
+        # action_probs = F.softmax(preferences / tau, dim=1)
+        # action = torch.multinomial(action_probs, num_samples=1).item()
         # return action
+        with torch.no_grad():
+            preferences = self.forward(state)
+        max_pref = torch.max(preferences, axis = 1).values
+        reshaped_max_pref = torch.unsqueeze(max_pref, 1)
+        exp_preferences = torch.exp(preferences/tau - reshaped_max_pref/tau)
+        sum_of_exp_preferences = torch.sum(exp_preferences, dim = 1)
+        reshaped_sum_of_exp_preferences = torch.unsqueeze(sum_of_exp_preferences, 1)
+        action_probs = exp_preferences / reshaped_sum_of_exp_preferences
+
+
+        action = torch.multinomial(action_probs, num_samples=1) # do this on the GPU
+        action = action.item()
+        # # action = self.rand_generator.choice(self.num_actions, p=action_probs.detach().numpy().squeeze())
+        return action

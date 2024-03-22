@@ -51,8 +51,17 @@ class Simulator:
         3. Hohmann
         """
 
+        # Force the eccentricity to 0
+        # self.otv_orbit.ecc = 0 * u.one
+
         # Set the target from the action
         target_debris = self.debris_list[action[0]].poliastro_orbit
+
+        # DEBUG: print the otv and target elements
+        # print('OTV Elements before')
+        # print(self.otv_orbit.a, self.otv_orbit.ecc, self.otv_orbit.inc, self.otv_orbit.raan, self.otv_orbit.argp, self.otv_orbit.nu)
+        # print('Target Elements before')
+        # print(target_debris.a, target_debris.ecc, target_debris.inc, target_debris.raan, target_debris.argp, target_debris.nu)
 
         # ---- Inclination change
         inc_change = CustomManeuvres.simple_inc_change(self.otv_orbit, target_debris)

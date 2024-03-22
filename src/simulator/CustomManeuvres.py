@@ -28,7 +28,7 @@ def time_to_inc_change(orbit):
     '''
     # Compute location by converting nu to mean
     mean_anomaly = to_mean(orbit.nu, orbit.argp)
-    thrust_location = 0 * u.deg if mean_anomaly <= 0 else 179.999 * u.deg
+    thrust_location = 0 * u.deg if mean_anomaly <= 0 else 179.99999999999 * u.deg
 
     # Compute time
     delta_mean = thrust_location - mean_anomaly # should always be positive
@@ -53,7 +53,8 @@ def time_to_raan_change(orbit_i, orbit_f):
     
 
     # Compute time
-    delta_u = (u_final - orbit_i.nu) << u.deg
+    u_orbit_i = (orbit_i.nu + orbit_i.argp) << u.deg
+    delta_u = (u_final - u_orbit_i) << u.deg
     if delta_u < 0:
         delta_u = 360 * u.deg + delta_u # wrap to 360
     time = (orbit_i.period << u.s) * delta_u / (360 * u.deg)

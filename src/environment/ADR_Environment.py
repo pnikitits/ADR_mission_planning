@@ -15,7 +15,7 @@ class ADR_Environment(BaseEnvironment):
         self.name = "ADR"
 
 
-    def env_init(self , env_info={}):
+    def env_init(self, first_debris=1, env_info={}):
         
         # we only set the environment parameters at the first episode
         if env_info != {}:
@@ -33,7 +33,7 @@ class ADR_Environment(BaseEnvironment):
         self.time_uses_in_episode = []
         
         # Init starting debris
-        self.first_debris = 0  
+        self.first_debris = first_debris 
         # self.first_debris = random.randint(0, self.total_n_debris-1)
 
         self.simulator = Simulator(starting_index=self.first_debris , n_debris=self.total_n_debris)
@@ -114,14 +114,14 @@ class ADR_Environment(BaseEnvironment):
 
     
 
-    def env_start(self):
+    def env_start(self, first_debris = 1):
         print("\nENV START\n") if self.debug else None
         reward = 0.0
         is_terminal = False
 
         # values update
 
-        observation = self.env_init()
+        observation = self.env_init(first_debris)
         # print(observation)
 
         print('\n ----- Starting Episode ---- \n') if self.debug else None
@@ -138,8 +138,8 @@ class ADR_Environment(BaseEnvironment):
         # Calculate reward using the priority list
         action_target = action[0]
         reward = self.state.priority_list[action_target]
-        if reward == 10:
-            pass#print("Selected correct debris: ", action_target)
+        """if reward == 10:
+            pass#print("Selected correct debris: ", action_target)"""
 
         # Set reward to 0 if the action is not legal
         if not self.action_is_legal:

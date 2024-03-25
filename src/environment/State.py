@@ -31,7 +31,7 @@ class State:
 
         # Add a higher priority to the selected debris
         if priority_debris != None:
-            self.priority_list[priority_debris] = 10
+            self.priority_list[priority_debris] = 1 # 10
             #print(f"Priority given to {priority_debris}")
 
 

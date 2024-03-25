@@ -24,6 +24,7 @@ class ADR_Environment(BaseEnvironment):
             self.dt_max_per_mission = env_info['dt_max_per_mission'] # * u.day
             self.dt_max_per_transfer = env_info['dt_max_per_transfer'] # * u.day            
 
+        print('env info: ', env_info)
 
         # Debugging
         self.debug = True
@@ -33,8 +34,8 @@ class ADR_Environment(BaseEnvironment):
         self.time_uses_in_episode = []
         
         # Init starting debris
-        self.first_debris = first_debris 
-        # self.first_debris = random.randint(0, self.total_n_debris-1)
+        # self.first_debris = first_debris 
+        self.first_debris = random.randint(0, self.total_n_debris-1)
 
         self.simulator = Simulator(starting_index=self.first_debris , n_debris=self.total_n_debris)
 

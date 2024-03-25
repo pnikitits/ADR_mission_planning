@@ -23,7 +23,7 @@ experiment_parameters:
   track_wandb: True
 
 environment_parameters:
-  total_n_debris: 10 # TODO gets len debris after datareader
-  dv_max_per_mission: 5 # * u.km / u.s
+  total_n_debris: 6 # TODO gets len debris after datareader
+  dv_max_per_mission: 1 # * u.km / u.s
   dt_max_per_mission: 100 # * u.day
   dt_max_per_transfer: 30 # * u.day 

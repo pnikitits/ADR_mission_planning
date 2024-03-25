@@ -24,7 +24,7 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
     rl_glue = RLGlue(environment, agent)
     agent_sum_reward = np.zeros((experiment_parameters["num_runs"],
                                  experiment_parameters["num_episodes"]))
-    env_info = {}
+    env_info = environment_parameters
     agent_info = agent_parameters
     for run in range(1 , experiment_parameters["num_runs"]+1):
         agent_info["seed"] = run

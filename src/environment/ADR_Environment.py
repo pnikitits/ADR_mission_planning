@@ -13,9 +13,17 @@ from astropy import units as u
 class ADR_Environment(BaseEnvironment):
     def init(self):
         self.name = "ADR"
-        
+
 
     def env_init(self , env_info={}):
+        
+        # we only set the environment parameters at the first episode
+        if env_info != {}:
+            self.total_n_debris = env_info["total_n_debris"] # TODO gets len debris after datareader
+            self.dv_max_per_mission = env_info['dv_max_per_mission'] # * u.km / u.s
+            self.dt_max_per_mission = env_info['dt_max_per_mission'] # * u.day
+            self.dt_max_per_transfer = env_info['dt_max_per_transfer'] # * u.day            
+
 
         # Debugging
         self.debug = True
@@ -23,11 +31,6 @@ class ADR_Environment(BaseEnvironment):
 
         self.fuel_uses_in_episode = [] # to log the fuel use
         self.time_uses_in_episode = []
-
-        self.total_n_debris = 10 # TODO gets len debris after datareader
-        self.dv_max_per_mission = 5 # * u.km / u.s
-        self.dt_max_per_mission = 100 # * u.day
-        self.dt_max_per_transfer = 30 # * u.day
         
         # Init starting debris
         self.first_debris = 0  

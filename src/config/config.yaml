@@ -20,6 +20,10 @@ experiment_parameters:
   num_episodes: 2000
   timeout: 2000
   gpu_use: True
-  track_wandb: True
+  track_wandb: False
 
 environment_parameters:
+  total_n_debris: 10 # len debris
+  dv_max_per_mission: 5 # * u.km / u.s
+  dt_max_per_mission: 100 # * u.day
+  dt_max_per_transfer: 30 # * u.day 

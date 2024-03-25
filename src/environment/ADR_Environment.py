@@ -15,7 +15,7 @@ class ADR_Environment(BaseEnvironment):
         self.name = "ADR"
 
 
-    def env_init(self, first_debris=1, env_info={}):
+    def env_init(self, first_debris="random", env_info={}):
         
         # we only set the environment parameters at the first episode
         if env_info != {}:
@@ -159,8 +159,10 @@ class ADR_Environment(BaseEnvironment):
         # print(f"Action: {action} , otv at: {self.state.current_removing_debris}") # If the action is not legal by binary flags, the propagation does NOT work
         # print(f"Next binary flag: {self.state.binary_flags[action[0]]}")
         if self.state.binary_flags[action[0]] == 1:
-            print('illegal action')
+            print('illegal binary flag')
             return (0 , self.state.to_list() , True)
+        else:
+            print('went to debris: ', action[0])
 
         # Use the simulator to compute the maneuvre fuel and time and propagate
         cv , dt_min = self.simulator.simulate_action(action)
@@ -175,7 +177,7 @@ class ADR_Environment(BaseEnvironment):
 
         self.action_is_legal = self.is_legal(action , cv , dt_min)
         if not self.action_is_legal:
-            print('illegal action')
+            print('max fuel used')
 
         # Get reward based on action
         reward = self.compute_reward(action)

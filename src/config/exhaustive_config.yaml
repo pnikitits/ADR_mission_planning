@@ -17,13 +17,13 @@ agent_parameters:
 
 experiment_parameters:
   num_runs: 1
-  num_episodes: 2000
-  timeout: 2000
+  num_episodes: 10000
+  timeout: 10000
   gpu_use: True
   track_wandb: True
 
 environment_parameters:
   total_n_debris: 6 # TODO gets len debris after datareader
-  dv_max_per_mission: 1 # * u.km / u.s
+  dv_max_per_mission: 1.5 # * u.km / u.s
   dt_max_per_mission: 100 # * u.day
   dt_max_per_transfer: 30 # * u.day 

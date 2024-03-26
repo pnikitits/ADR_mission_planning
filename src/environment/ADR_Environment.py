@@ -15,15 +15,17 @@ class ADR_Environment(BaseEnvironment):
         self.name = "ADR"
 
 
-    def env_init(self , env_info={}):
+    def env_init(self, first_debris="random", env_info={}):
         
         # we only set the environment parameters at the first episode
         if env_info != {}:
             self.total_n_debris = env_info["total_n_debris"] # TODO gets len debris after datareader
             self.dv_max_per_mission = env_info['dv_max_per_mission'] # * u.km / u.s
             self.dt_max_per_mission = env_info['dt_max_per_mission'] # * u.day
-            self.dt_max_per_transfer = env_info['dt_max_per_transfer'] # * u.day            
+            self.dt_max_per_transfer = env_info['dt_max_per_transfer'] # * u.day       
+            self.priority_is_on = env_info['priority_is_on']   # Boolean
 
+        print('env info: ', env_info)
 
         # Debugging
         self.debug = True
@@ -33,8 +35,8 @@ class ADR_Environment(BaseEnvironment):
         self.time_uses_in_episode = []
         
         # Init starting debris
-        self.first_debris = 0  
-        # self.first_debris = random.randint(0, self.total_n_debris-1)
+        # self.first_debris = first_debris 
+        self.first_debris = random.randint(0, self.total_n_debris-1)
 
         self.simulator = Simulator(starting_index=self.first_debris , n_debris=self.total_n_debris)
 
@@ -50,7 +52,8 @@ class ADR_Environment(BaseEnvironment):
                            total_n_debris = self.total_n_debris ,
                            dv_max_per_mission = self.dv_max_per_mission ,
                            dt_max_per_mission = self.dt_max_per_mission ,
-                           first_debris = self.first_debris)
+                           first_debris = self.first_debris,
+                           priority_is_on = self.priority_is_on)
         
 
         observation = self.env_observe_state()
@@ -114,14 +117,14 @@ class ADR_Environment(BaseEnvironment):
 
     
 
-    def env_start(self):
+    def env_start(self, first_debris = 1):
         print("\nENV START\n") if self.debug else None
         reward = 0.0
         is_terminal = False
 
         # values update
 
-        observation = self.env_init()
+        observation = self.env_init(first_debris)
         # print(observation)
 
         print('\n ----- Starting Episode ---- \n') if self.debug else None
@@ -138,8 +141,6 @@ class ADR_Environment(BaseEnvironment):
         # Calculate reward using the priority list
         action_target = action[0]
         reward = self.state.priority_list[action_target]
-        if reward == 10:
-            pass#print("Selected correct debris: ", action_target)
 
         # Set reward to 0 if the action is not legal
         if not self.action_is_legal:
@@ -158,8 +159,10 @@ class ADR_Environment(BaseEnvironment):
         # print(f"Action: {action} , otv at: {self.state.current_removing_debris}") # If the action is not legal by binary flags, the propagation does NOT work
         # print(f"Next binary flag: {self.state.binary_flags[action[0]]}")
         if self.state.binary_flags[action[0]] == 1:
-            print('illegal action')
+            print('illegal binary flag')
             return (0 , self.state.to_list() , True)
+        else:
+            print('went to debris: ', action[0])
 
         # Use the simulator to compute the maneuvre fuel and time and propagate
         cv , dt_min = self.simulator.simulate_action(action)
@@ -174,7 +177,7 @@ class ADR_Environment(BaseEnvironment):
 
         self.action_is_legal = self.is_legal(action , cv , dt_min)
         if not self.action_is_legal:
-            print('illegal action')
+            print('max fuel used')
 
         # Get reward based on action
         reward = self.compute_reward(action)
@@ -215,6 +218,15 @@ class ADR_Environment(BaseEnvironment):
                 dict[i] = (debris , dt)
                 i += 1
         return dict
+    
+    # def no_time_action_dict(self):
+    #     # 
+    #     dict = {}
+    #     i = 0
+    #     for debris in range(self.total_n_debris):
+    #         dict[i] = (debris , self.dt_max_per_transfer)
+    #         i += 1
+    #     return dict
     
     def get_priority(self):
         '''

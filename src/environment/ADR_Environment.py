@@ -22,7 +22,8 @@ class ADR_Environment(BaseEnvironment):
             self.total_n_debris = env_info["total_n_debris"] # TODO gets len debris after datareader
             self.dv_max_per_mission = env_info['dv_max_per_mission'] # * u.km / u.s
             self.dt_max_per_mission = env_info['dt_max_per_mission'] # * u.day
-            self.dt_max_per_transfer = env_info['dt_max_per_transfer'] # * u.day            
+            self.dt_max_per_transfer = env_info['dt_max_per_transfer'] # * u.day       
+            self.priority_is_on = env_info['priority_is_on']   # Boolean
 
         print('env info: ', env_info)
 
@@ -51,7 +52,8 @@ class ADR_Environment(BaseEnvironment):
                            total_n_debris = self.total_n_debris ,
                            dv_max_per_mission = self.dv_max_per_mission ,
                            dt_max_per_mission = self.dt_max_per_mission ,
-                           first_debris = self.first_debris)
+                           first_debris = self.first_debris,
+                           priority_is_on = self.priority_is_on)
         
 
         observation = self.env_observe_state()
@@ -139,8 +141,6 @@ class ADR_Environment(BaseEnvironment):
         # Calculate reward using the priority list
         action_target = action[0]
         reward = self.state.priority_list[action_target]
-        """if reward == 10:
-            pass#print("Selected correct debris: ", action_target)"""
 
         # Set reward to 0 if the action is not legal
         if not self.action_is_legal:
@@ -218,6 +218,15 @@ class ADR_Environment(BaseEnvironment):
                 dict[i] = (debris , dt)
                 i += 1
         return dict
+    
+    # def no_time_action_dict(self):
+    #     # 
+    #     dict = {}
+    #     i = 0
+    #     for debris in range(self.total_n_debris):
+    #         dict[i] = (debris , self.dt_max_per_transfer)
+    #         i += 1
+    #     return dict
     
     def get_priority(self):
         '''

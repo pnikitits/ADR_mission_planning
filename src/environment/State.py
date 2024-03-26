@@ -3,7 +3,7 @@ from src.environment.Strat_1 import CV , strat_1_dv
 from astropy import units as u
 
 class State:
-    def __init__(self , removal_step , total_n_debris , dv_max_per_mission , dt_max_per_mission , first_debris):
+    def __init__(self , removal_step , total_n_debris , dv_max_per_mission , dt_max_per_mission , first_debris, priority_is_on):
         self.removal_step = removal_step
         self.number_debris_left = total_n_debris
         self.dv_left = dv_max_per_mission
@@ -12,6 +12,7 @@ class State:
         self.binary_flags = np.zeros(total_n_debris).tolist()
         self.binary_flags[self.current_removing_debris] = 1
         self.priority_list = np.ones(total_n_debris).tolist()
+        self.priority_is_on = priority_is_on
 
     def transition_function(self , action ,  cv , dt_min , priority_debris, debug = True): # Looks like it works
         
@@ -31,8 +32,8 @@ class State:
 
         # Add a higher priority to the selected debris
         if priority_debris != None:
-            self.priority_list[priority_debris] = 1 # 10
-            #print(f"Priority given to {priority_debris}")
+            if self.priority_is_on:
+                self.priority_list[priority_debris] = 10
 
 
     def to_list(self):

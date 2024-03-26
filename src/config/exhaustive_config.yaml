@@ -27,3 +27,4 @@ environment_parameters:
   dv_max_per_mission: 1.5 # * u.km / u.s
   dt_max_per_mission: 100 # * u.day
   dt_max_per_transfer: 30 # * u.day 
+  priority_is_on : False

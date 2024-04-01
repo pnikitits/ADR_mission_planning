@@ -18,7 +18,8 @@ class State:
         
         self.removal_step += 1
         self.number_debris_left -= 1
-        self.dt_left -= action[1] # NOT dt_min ?
+        # self.dt_left -= action[1] # NOT dt_min ?
+        self.dt_left -= dt_min.to(u.day).value
         
         #print(f"--- Taking action {action}: 'dv={cv} , dt={dt_min}")
 

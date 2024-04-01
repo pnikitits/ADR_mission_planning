@@ -24,8 +24,7 @@ class ADR_Environment(BaseEnvironment):
             self.dt_max_per_mission = env_info['dt_max_per_mission'] # * u.day
             self.dt_max_per_transfer = env_info['dt_max_per_transfer'] # * u.day       
             self.priority_is_on = env_info['priority_is_on']   # Boolean
-
-        print('env info: ', env_info)
+            self.time_based_action = env_info['time_based_action'] # Boolean
 
         # Debugging
         self.debug = True
@@ -42,8 +41,12 @@ class ADR_Environment(BaseEnvironment):
 
         self.action_is_legal = False
         
+        # Use the correct dictionary for the action space
+        if self.time_based_action:
+            self.action_space = self.action_dict()
+        else: 
+            self.action_space = self.no_time_action_dict()
         
-        self.action_space = self.action_dict()
         self.action_space_len = len(self.action_space)
 
         
@@ -153,16 +156,19 @@ class ADR_Environment(BaseEnvironment):
 
         print("\n -----  ENV STEP ----- \n") if self.debug else None
 
+        print('action_key: ', action_key)
+
         # Convert action key from NN into action (next_debris_norad_id , dt_given)
         action = self.action_space[action_key]
+
+        print('converted action: ', action)
 
         # print(f"Action: {action} , otv at: {self.state.current_removing_debris}") # If the action is not legal by binary flags, the propagation does NOT work
         # print(f"Next binary flag: {self.state.binary_flags[action[0]]}")
         if self.state.binary_flags[action[0]] == 1:
             print('illegal binary flag')
             return (0 , self.state.to_list() , True)
-        else:
-            print('went to debris: ', action[0])
+            
 
         # Use the simulator to compute the maneuvre fuel and time and propagate
         cv , dt_min = self.simulator.simulate_action(action)
@@ -210,7 +216,7 @@ class ADR_Environment(BaseEnvironment):
 
     
     def action_dict(self):
-        # return dict = {key:tuple(debris index , dt)}
+        # Used in the case where the agent can select the dt per maneouvre
         dict = {}
         i = 0
         for debris in range(self.total_n_debris):
@@ -219,14 +225,15 @@ class ADR_Environment(BaseEnvironment):
                 i += 1
         return dict
     
-    # def no_time_action_dict(self):
-    #     # 
-    #     dict = {}
-    #     i = 0
-    #     for debris in range(self.total_n_debris):
-    #         dict[i] = (debris , self.dt_max_per_transfer)
-    #         i += 1
-    #     return dict
+    def no_time_action_dict(self):
+        # Use the in the case where the agent can only select the debris
+        dict = {}
+        i = 0
+        for debris in range(self.total_n_debris):
+            # Still have a condition on the max time per transfer
+            dict[i] = (debris , self.dt_max_per_transfer)
+            i += 1
+        return dict
     
     def get_priority(self):
         '''

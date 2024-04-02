@@ -4,7 +4,7 @@ agent_parameters:
     num_hidden_units: 256
     num_actions: 6
   optimizer_config:
-    step_size: 0.0001
+    step_size: 0.01
     beta_m: 0.9
     beta_v: 0.999
     epsilon: 0.00000001
@@ -12,7 +12,7 @@ agent_parameters:
   minibatch_size: 64
   num_replay_updates_per_step: 4
   gamma: 0.99
-  tau: 0.01
+  tau: 0.001
   seed: 4
 
 experiment_parameters:
@@ -29,4 +29,4 @@ environment_parameters:
   dt_max_per_transfer: 30 # * u.day 
   priority_is_on : False
   time_based_action : False
-  random_first_debris: True # To set the first debris, use env_start
+  random_first_debris: False # To set the first debris, use env_start

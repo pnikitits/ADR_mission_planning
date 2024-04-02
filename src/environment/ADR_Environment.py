@@ -124,7 +124,7 @@ class ADR_Environment(BaseEnvironment):
 
     
 
-    def env_start(self, first_debris=0):
+    def env_start(self, first_debris=4):
         print("\nENV START\n") if self.debug else None
         reward = 0.0
         is_terminal = False

@@ -15,7 +15,7 @@ if __name__ == "__main__":
     a = wandb.init()
     
 
-    with open("src/config/config.yaml") as file: # change file name to use different sweep
+    with open("src/config/config_copy.yaml") as file: # change file name to use different sweep
         config = yaml.load(file, Loader=yaml.FullLoader)
 
     agent_parameters = config['agent_parameters']

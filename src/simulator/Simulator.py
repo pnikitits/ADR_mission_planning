@@ -22,7 +22,7 @@ class Debris:
 class Simulator:
     def __init__(self , starting_index=1 , n_debris=10):
         # Initialise the debris dictionary and assign the otv to an Orbit
-        self.debris_list = self.init_random_debris(n=n_debris) 
+        self.debris_list = self.debris_from_dataset(n=n_debris) #self.init_random_debris(n=n_debris) 
         #self.debris_list = self.debris_from_dataset(n=320) #le dataset contient 320 debris
         check_debris = False
         if check_debris:
@@ -174,7 +174,7 @@ class Simulator:
             inc = dataset[1][i] * u.deg
             raan = dataset[2][i] * u.deg
             argp = dataset[4][i] * u.deg
-            nu = dataset[5][i] * u.deg
+            nu = (dataset[5][i] - 180) * u.deg
 
             debris = Orbit.from_classical(Earth, a, ecc, inc, raan, argp, nu)
             debris_list.append(Debris(poliastro_orbit=debris , norad_id=norad_id))

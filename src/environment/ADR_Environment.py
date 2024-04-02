@@ -27,7 +27,7 @@ class ADR_Environment(BaseEnvironment):
             self.time_based_action = env_info['time_based_action'] # Boolean
 
         # Debugging
-        self.debug = True
+        self.debug = False
         self.debug_list = [0, 0, 0, 0]
 
         self.fuel_uses_in_episode = [] # to log the fuel use
@@ -156,17 +156,17 @@ class ADR_Environment(BaseEnvironment):
 
         print("\n -----  ENV STEP ----- \n") if self.debug else None
 
-        print('action_key: ', action_key)
+        print('action_key: ', action_key) if self.debug else None
 
         # Convert action key from NN into action (next_debris_norad_id , dt_given)
         action = self.action_space[action_key]
 
-        print('converted action: ', action)
+        print('converted action: ', action) if self.debug else None
 
         # print(f"Action: {action} , otv at: {self.state.current_removing_debris}") # If the action is not legal by binary flags, the propagation does NOT work
         # print(f"Next binary flag: {self.state.binary_flags[action[0]]}")
         if self.state.binary_flags[action[0]] == 1:
-            print('illegal binary flag')
+            print('illegal binary flag') if self.debug else None
             return (0 , self.state.to_list() , True)
             
 
@@ -178,12 +178,12 @@ class ADR_Environment(BaseEnvironment):
         otv = self.simulator.otv_orbit
         diff = otv.r - target_debris.r
         if np.max(diff) > 0.1 * u.km:
-            print('distance between otv and target debris: ', otv.r - target_debris.r)
-            print('time differences: ', (otv.epoch - target_debris.epoch))
+            print('distance between otv and target debris: ', otv.r - target_debris.r) if self.debug else None
+            print('time differences: ', (otv.epoch - target_debris.epoch)) if self.debug else None
 
         self.action_is_legal = self.is_legal(action , cv , dt_min)
         if not self.action_is_legal:
-            print('max fuel used')
+            print('max fuel used') if self.debug else None
 
         # Get reward based on action
         reward = self.compute_reward(action)

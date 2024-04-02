@@ -12,16 +12,17 @@ from src.trainer.trainer import run_experiment
 def run_sweeping():
     a = wandb.init()
     weights_file = None #'models/test_weights.pth'
-    experiment_parameters = {"num_runs":1,
-                                "num_episodes":2000,
-                                "timeout":2000,
-                                "gpu_use":True,
-                                "track_wandb":False}
-    environment_parameters = {}
+
+    with open("src/config/config.yaml") as file: # change file name to use different sweep
+        config = yaml.load(file, Loader=yaml.FullLoader)
+
+    
+    experiment_parameters = config['experiment_parameters']
+    environment_parameters = config['environment_parameters']
     current_env = ADR_Environment
     agent_parameters = {"network_config":{"state_dim":25,
-                                            "num_hidden_units":512,
-                                            "num_actions":300,
+                                            "num_hidden_units":256,
+                                            "num_actions":10,
                                             "weights_file":weights_file},
                             "optimizer_config":{"step_size": wandb.config.learning_rate, # working value 1e-3
                                                 "beta_m":0.9,

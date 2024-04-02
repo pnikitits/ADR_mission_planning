@@ -16,7 +16,7 @@ agent_parameters:
   seed: 0
 
 experiment_parameters:
-  num_runs: 1
+  num_runs: 3
   num_episodes: 2000
   timeout: 2000
   gpu_use: True

@@ -16,6 +16,8 @@ from src.rlglue.agent import BaseAgent
 from src.environment.ADR_Environment import ADR_Environment
 from src.visualisation.plot_script import plot_result
 
+from tqdm import tqdm
+
 def run_experiment(environment , agent , environment_parameters , agent_parameters , experiment_parameters):
     """
     Run the experiment
@@ -26,6 +28,9 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
                                  experiment_parameters["num_episodes"]))
     env_info = environment_parameters
     agent_info = agent_parameters
+
+    
+
     for run in range(1 , experiment_parameters["num_runs"]+1):
         agent_info["seed"] = run
         agent_info["network_config"]["seed"] = run
@@ -44,7 +49,7 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
             torch.backends.cudnn.benchmark = False
 
         ep_count = 0
-        for episode in range(1 , experiment_parameters["num_episodes"]+1):
+        for episode in tqdm(range(1 , experiment_parameters["num_episodes"]+1)):
             ep_count += 1
             #environment.pass_count(environment, message=f"Ep : {ep_count}")
             rl_glue.rl_episode(experiment_parameters["timeout"])
@@ -66,20 +71,14 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
                     "impossible_dt": impossible_dt,
                     "impossible_binary_flag": impossible_binary_flag,
                     "average fuel used":avg_fuel_used,
-                    "average time used":avg_time_used
+                    "average time used":avg_time_used,
+                    "time step": episode
                 })
 
-    wandb.log({"avg_reward": sum(agent_sum_reward[0])/experiment_parameters["num_episodes"]})
- 
-    # subfolder = 'models/'
-    # model_name = input("model name : ")
-    # if not os.path.exists("models"):
-    #     os.makedirs("models")
-    # if model_name != '':
-    #     torch.save(rl_glue.agent.policy_network.state_dict(), subfolder + model_name +'.pth')
-    #     print("Model saved as ", model_name)
+    # print the average reward per run
+    print("Average reward per run = ", np.mean(agent_sum_reward, axis=1))
+    print("Overall average reward = ", np.mean(agent_sum_reward))
 
-    # save_name = "{}".format(rl_glue.agent.name)
-    # if not os.path.exists("results"):
-    #     os.makedirs("results")
-    # np.save("results/sum_reward_{}".format(save_name) , agent_sum_reward)
+    wandb.log({"avg_reward": np.mean(agent_sum_reward)})
+
+

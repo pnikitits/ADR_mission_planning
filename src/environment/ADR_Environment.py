@@ -15,7 +15,7 @@ class ADR_Environment(BaseEnvironment):
         self.name = "ADR"
 
 
-    def env_init(self, first_debris="random", env_info={}):
+    def env_init(self, first_debris=4, env_info={}):
         
         # we only set the environment parameters at the first episode
         if env_info != {}:
@@ -25,6 +25,7 @@ class ADR_Environment(BaseEnvironment):
             self.dt_max_per_transfer = env_info['dt_max_per_transfer'] # * u.day       
             self.priority_is_on = env_info['priority_is_on']   # Boolean
             self.time_based_action = env_info['time_based_action'] # Boolean
+            self.random_first_debris = env_info['random_first_debris']
 
         # Debugging
         self.debug = True
@@ -34,8 +35,11 @@ class ADR_Environment(BaseEnvironment):
         self.time_uses_in_episode = []
         
         # Init starting debris
-        # self.first_debris = first_debris 
-        self.first_debris = random.randint(0, self.total_n_debris-1)
+        if self.random_first_debris:
+            self.first_debris = random.randint(0, self.total_n_debris-1)
+        else:
+            self.first_debris = first_debris
+            print('first debris: ', self.first_debris)
 
         self.simulator = Simulator(starting_index=self.first_debris , n_debris=self.total_n_debris)
 
@@ -120,7 +124,7 @@ class ADR_Environment(BaseEnvironment):
 
     
 
-    def env_start(self, first_debris = 1):
+    def env_start(self, first_debris=0):
         print("\nENV START\n") if self.debug else None
         reward = 0.0
         is_terminal = False

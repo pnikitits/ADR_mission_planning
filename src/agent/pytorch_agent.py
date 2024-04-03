@@ -53,7 +53,7 @@ class Agent(BaseAgent):
         """
         state = torch.tensor(state, device = self.device, dtype = torch.float32)
         # action = self.policy_network.select_action(state, self.tau)
-        # action = self.policy_network.softmax_to_greedy_action(state, self.tau)
+        action = self.policy_network.softmax_to_greedy_action(state, self.tau)
         # action = self.policy_network.select_greedy_action(state)
         
         return action

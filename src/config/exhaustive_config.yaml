@@ -12,7 +12,7 @@ agent_parameters:
   minibatch_size: 64
   num_replay_updates_per_step: 4
   gamma: 0.99
-  tau: 0.01
+  tau: 0.1
   seed: 4
 
 experiment_parameters:

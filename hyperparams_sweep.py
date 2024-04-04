@@ -24,8 +24,8 @@ def run_sweeping():
 
     current_env = ADR_Environment
     agent_parameters = {"network_config":{"state_dim":25,
-                                            "num_hidden_units":512,
-                                            "num_actions":300,
+                                            "num_hidden_units":256,
+                                            "num_actions":10,
                                             "weights_file":weights_file},
                             "optimizer_config":{"step_size": wandb.config.learning_rate, # working value 1e-3
                                                 "beta_m":0.9,

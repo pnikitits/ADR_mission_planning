@@ -17,7 +17,7 @@ agent_parameters:
 
 experiment_parameters:
   num_runs: 3
-  num_episodes: 500
+  num_episodes: 4000
   timeout: 2000
   gpu_use: True
   track_wandb: True

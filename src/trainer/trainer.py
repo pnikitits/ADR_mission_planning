@@ -15,6 +15,7 @@ from src.rlglue.rl_glue import RLGlue
 from src.rlglue.agent import BaseAgent
 from src.environment.ADR_Environment import ADR_Environment
 from src.visualisation.plot_script import plot_result
+from tqdm import tqdm
 
 def run_experiment(environment , agent , environment_parameters , agent_parameters , experiment_parameters):
     """
@@ -46,7 +47,7 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
             torch.backends.cudnn.benchmark = False
 
         ep_count = 0
-        for episode in range(1 , experiment_parameters["num_episodes"]+1):
+        for episode in tqdm(range(1 , experiment_parameters["num_episodes"]+1)):
             ep_count += 1
             #environment.pass_count(environment, message=f"Ep : {ep_count}")
             rl_glue.rl_episode(experiment_parameters["timeout"])
@@ -68,7 +69,8 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
                     "impossible_dt": impossible_dt,
                     "impossible_binary_flag": impossible_binary_flag,
                     "average fuel used":avg_fuel_used,
-                    "average time used":avg_time_used
+                    "average time used":avg_time_used,
+                    "time step": episode
                 })
             
     wandb.log({"avg_reward": np.mean(agent_sum_reward)})

@@ -69,7 +69,7 @@ def main(args):
         "-nb_sweeps",
         dest="nb_sweeps",
         type=int,
-        default=50,
+        default=200,
         required=False,
     )
 

@@ -33,7 +33,7 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
 
     for run in range(1 , experiment_parameters["num_runs"]+1):
         
-        #changed_seed = 12 # override seed
+        #changed_seed = 2 # override seed
 
         agent_info["seed"] = run # run
         agent_info["network_config"]["seed"] = run # run

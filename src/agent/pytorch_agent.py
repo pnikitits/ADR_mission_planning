@@ -161,23 +161,23 @@ class Agent(BaseAgent):
         with torch.no_grad():
             # next_state_values[non_final_mask] = self.target_network(non_final_next_states).max(1).values
             next_state_values_before_mask = self.target_network(non_final_next_states).max(1).values
-            print('values before masking = ', next_state_values_before_mask)
+            #print('values before masking = ', next_state_values_before_mask)
             next_state_values = next_state_values_before_mask * non_final_mask
-            print('values after masking = ', next_state_values)
+            #print('values after masking = ', next_state_values)
 
         # Compute the expected Q values (TD targets)
         expected_state_action_values = (next_state_values * self.discount) + reward_batch
 
         # Check the values
-        print("state_action_values = ",state_action_values)
-        print("expected_state_action_values = ",expected_state_action_values)
+        #print("state_action_values = ",state_action_values)
+        #print("expected_state_action_values = ",expected_state_action_values)
 
         # Compute Huber loss
         criterion = nn.SmoothL1Loss()
         loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
 
         # Check the loss
-        print("loss = ",loss)
+        #print("loss = ",loss)
 
         # Optimize the model
         self.optimizer.zero_grad()

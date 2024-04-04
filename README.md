@@ -35,6 +35,6 @@ python main.py
 ## Hyperparameters tuning
 To tune the hyperparameters using Weights and Biases:
 ```bash
-python hyperparams_sweep.py -method bayes -nb_sweeps 20
+python hyperparams_sweep.py -method bayes -nb_sweeps 200
 ```
 By default, the method used is bayesian search and it is configured to execute 200 iterations.

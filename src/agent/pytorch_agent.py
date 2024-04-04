@@ -12,7 +12,6 @@ from src.rlglue.agent import BaseAgent
 from src.agent.replay_buffer import ReplayBuffer, Transition
 from src.agent.action_value_network import ActionValueNetwork
 from src.environment.ADR_Environment import ADR_Environment
-from src.visualisation.plot_script import plot_result
     
 
 class Agent(BaseAgent):

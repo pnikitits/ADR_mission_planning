@@ -2,6 +2,26 @@
 
 ## Project structure
 ```
+├── data                                        # a
+├── notebooks                                   # b
+│   └── 1.0-exploratory-data-analysis.ipynb     # c
+├── results                                     # d
+│   └── python                                  # e
+├── src                                         # f
+│   ├── agent                                   # g
+│   ├── config                                  # g
+│   ├── environment                             # g
+│   ├── rlglue                                  # g
+│   ├── config                                  # g
+│   ├── simulator                               # g
+│   └── trainer                                 # g
+├── exhaustive_search.ipynb                     # g
+├── hyperparams_sweep.py                        # g
+├── main.py                                     # g
+
+
+
+```
 +---data
 +---notebooks
 +---results
@@ -12,7 +32,7 @@
     +---rlglue
     +---simulator
     +---trainer
-```
+
 
 ## Dependencies
 To install dependencies:

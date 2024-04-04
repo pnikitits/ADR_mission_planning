@@ -32,12 +32,18 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
     
 
     for run in range(1 , experiment_parameters["num_runs"]+1):
-        agent_info["seed"] = run
-        agent_info["network_config"]["seed"] = run
-        env_info["seed"] = run
+        
+        changed_seed = 12 # override seed
+
+        agent_info["seed"] = changed_seed # run
+        agent_info["network_config"]["seed"] = changed_seed # run
+        env_info["seed"] = changed_seed # run
         rl_glue.rl_init(agent_info , env_info)
 
         seed = agent_info["seed"]
+
+        print(f"seed: {seed}")
+
         torch.manual_seed(seed)
         np.random.seed(seed)
         random.seed(seed)

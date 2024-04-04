@@ -167,7 +167,9 @@ class Simulator:
         """
         debris_list = []
         dataset = scipy.io.loadmat('data/TLE_iridium.mat')['TLE_iridium']
-        for i in range(n):
+
+        i = 0
+        while len(debris_list) < n:
             norad_id = dataset[0][i]
             a = dataset[6][i] * u.km 
             ecc = dataset[3][i] * u.one
@@ -176,8 +178,25 @@ class Simulator:
             argp = dataset[4][i] * u.deg
             nu = (dataset[5][i] - 180) * u.deg
 
-            debris = Orbit.from_classical(Earth, a, ecc, inc, raan, argp, nu)
-            debris_list.append(Debris(poliastro_orbit=debris , norad_id=norad_id))
+            if dataset[2][i] < 300 and dataset[2][i] > 290:
+                debris = Orbit.from_classical(Earth, a, ecc, inc, raan, argp, nu)
+                debris_list.append(Debris(poliastro_orbit=debris , norad_id=norad_id))
+
+            i += 1
+
+        # for i in range(n):
+        #     norad_id = dataset[0][i]
+        #     a = dataset[6][i] * u.km 
+        #     ecc = dataset[3][i] * u.one
+        #     inc = dataset[1][i] * u.deg
+        #     raan = dataset[2][i] * u.deg
+        #     argp = dataset[4][i] * u.deg
+        #     nu = (dataset[5][i] - 180) * u.deg
+
+        #     debris = Orbit.from_classical(Earth, a, ecc, inc, raan, argp, nu)
+        #     debris_list.append(Debris(poliastro_orbit=debris , norad_id=norad_id))
         
+        # print('Debris list length: ', len(debris_list))
+        # print(f"all raan: {[debris.poliastro_orbit.raan for debris in debris_list]}")
         return debris_list
 

@@ -14,6 +14,8 @@ class State:
         self.priority_list = np.ones(total_n_debris).tolist()
         self.priority_is_on = priority_is_on
 
+        self.dt_max_per_mission = dt_max_per_mission # For normalization
+
     def transition_function(self , action ,  cv , dt_min , priority_debris, debug = True): # Looks like it works
         
         self.removal_step += 1
@@ -51,7 +53,7 @@ class State:
         return [self.removal_step , 
                 self.number_debris_left , 
                 self.dv_left ,
-                self.dt_left , 
+                self.dt_left / self.dt_max_per_mission, # Normalized
                 self.current_removing_debris] + self.binary_flags + p_list
         
 

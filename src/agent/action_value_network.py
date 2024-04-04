@@ -93,7 +93,7 @@ class ActionValueNetwork(nn.Module):
 
         return action
 
-    def softmax_to_greedy_action(self, state, tau, greedy_switch=3000):
+    def softmax_to_greedy_action(self, state, tau, greedy_switch=1000):
         '''
             Switches from softmax to greedy policy after a certain number of episodes
 

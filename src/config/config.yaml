@@ -29,3 +29,4 @@ environment_parameters:
   dt_max_per_transfer: 30 # * u.day 
   priority_is_on : True
   time_based_action : False
+  random_first_debris: True # To set the first debris, use env_start

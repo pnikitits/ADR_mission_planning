@@ -22,8 +22,8 @@ class Debris:
 class Simulator:
     def __init__(self , starting_index=1 , n_debris=10):
         # Initialise the debris dictionary and assign the otv to an Orbit
-        self.debris_list = self.init_random_debris(n=n_debris) 
-        #self.debris_list = self.debris_from_dataset(n=320) #le dataset contient 320 debris
+        # self.debris_list = self.init_random_debris(n=n_debris) 
+        self.debris_list = self.debris_from_dataset(n=n_debris) #le dataset contient 320 debris
         check_debris = False
         if check_debris:
             for idx, target_debris in enumerate(self.debris_list):
@@ -32,7 +32,8 @@ class Simulator:
                 target_debris = target_debris.poliastro_orbit
                 print(target_debris.a, target_debris.ecc, target_debris.inc, target_debris.raan, target_debris.argp, target_debris.nu)
             print('Starting index: ', starting_index)
-        
+    
+
         self.otv_orbit = copy.copy(self.debris_list[starting_index].poliastro_orbit)
         
 
@@ -167,17 +168,38 @@ class Simulator:
         """
         debris_list = []
         dataset = scipy.io.loadmat('data/TLE_iridium.mat')['TLE_iridium']
-        for i in range(n):
+
+        # Select only favourable debris
+        i=0
+        while len(debris_list) < n+1:
             norad_id = dataset[0][i]
             a = dataset[6][i] * u.km 
-            ecc = dataset[3][i] * u.one
+            # ecc = dataset[3][i] * u.one
+            ecc = 0 * u.one
             inc = dataset[1][i] * u.deg
             raan = dataset[2][i] * u.deg
-            argp = dataset[4][i] * u.deg
-            nu = dataset[5][i] * u.deg
+            # argp = dataset[4][i] * u.deg
+            argp = 0 * u.deg
+            nu = (dataset[5][i] - 180) * u.deg
 
-            debris = Orbit.from_classical(Earth, a, ecc, inc, raan, argp, nu)
-            debris_list.append(Debris(poliastro_orbit=debris , norad_id=norad_id))
+            if dataset[2][i] < 20:
+                debris = Orbit.from_classical(Earth, a, ecc, inc, raan, argp, nu)
+                debris_list.append(Debris(poliastro_orbit=debris , norad_id=norad_id))
+            
+            i +=1
+
+        
+        # for i in range(n):
+        #     norad_id = dataset[0][i]
+        #     a = dataset[6][i] * u.km 
+        #     ecc = dataset[3][i] * u.one
+        #     inc = dataset[1][i] * u.deg
+        #     raan = dataset[2][i] * u.deg
+        #     argp = dataset[4][i] * u.deg
+        #     nu = dataset[5][i] * u.deg
+
+        #     debris = Orbit.from_classical(Earth, a, ecc, inc, raan, argp, nu)
+        #     debris_list.append(Debris(poliastro_orbit=debris , norad_id=norad_id))
         
         return debris_list
 

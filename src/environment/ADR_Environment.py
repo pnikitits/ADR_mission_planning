@@ -15,7 +15,7 @@ class ADR_Environment(BaseEnvironment):
         self.name = "ADR"
 
 
-    def env_init(self, first_debris="random", env_info={}):
+    def env_init(self, first_debris=3, env_info={}):
         
         # we only set the environment parameters at the first episode
         if env_info != {}:
@@ -25,17 +25,21 @@ class ADR_Environment(BaseEnvironment):
             self.dt_max_per_transfer = env_info['dt_max_per_transfer'] # * u.day       
             self.priority_is_on = env_info['priority_is_on']   # Boolean
             self.time_based_action = env_info['time_based_action'] # Boolean
+            self.random_first_debris = env_info['random_first_debris']
 
         # Debugging
-        self.debug = True
+        self.debug = False
         self.debug_list = [0, 0, 0, 0]
 
         self.fuel_uses_in_episode = [] # to log the fuel use
         self.time_uses_in_episode = []
         
         # Init starting debris
-        # self.first_debris = first_debris 
-        self.first_debris = random.randint(0, self.total_n_debris-1)
+        if self.random_first_debris:
+            self.first_debris = random.randint(0, self.total_n_debris-1)
+        else:
+            self.first_debris = first_debris
+            print('first debris: ', self.first_debris) if self.debug else None
 
         self.simulator = Simulator(starting_index=self.first_debris , n_debris=self.total_n_debris)
 
@@ -120,7 +124,7 @@ class ADR_Environment(BaseEnvironment):
 
     
 
-    def env_start(self, first_debris = 1):
+    def env_start(self, first_debris=3):
         print("\nENV START\n") if self.debug else None
         reward = 0.0
         is_terminal = False
@@ -156,12 +160,12 @@ class ADR_Environment(BaseEnvironment):
 
         print("\n -----  ENV STEP ----- \n") if self.debug else None
 
-        print('action_key: ', action_key)
+        print('action_key: ', action_key) if self.debug else None
 
         # Convert action key from NN into action (next_debris_norad_id , dt_given)
         action = self.action_space[action_key]
 
-        print('converted action: ', action)
+        print('converted action: ', action) if self.debug else None
 
         # print(f"Action: {action} , otv at: {self.state.current_removing_debris}") # If the action is not legal by binary flags, the propagation does NOT work
         # print(f"Next binary flag: {self.state.binary_flags[action[0]]}")
@@ -182,7 +186,7 @@ class ADR_Environment(BaseEnvironment):
             print('time differences: ', (otv.epoch - target_debris.epoch))
 
         self.action_is_legal = self.is_legal(action , cv , dt_min)
-        if not self.action_is_legal:
+        if not self.action_is_legal and self.debug:
             print('max fuel used')
 
         # Get reward based on action

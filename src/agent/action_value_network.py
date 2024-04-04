@@ -26,6 +26,8 @@ class ActionValueNetwork(nn.Module):
         if self.in_weights:
             self.load_state_dict(torch.load(self.in_weights , map_location=self.device))
             print("Weights loaded from ", self.in_weights)
+
+        self.action_counter = 0
         
     def forward(self, state):
         """
@@ -70,4 +72,46 @@ class ActionValueNetwork(nn.Module):
         action = torch.multinomial(action_probs, num_samples=1) # do this on the GPU
         action = action.item()
         # # action = self.rand_generator.choice(self.num_actions, p=action_probs.detach().numpy().squeeze())
+        return action
+    
+    def select_greedy_action(self, state):
+        """
+            Pure greedy policy
+        
+        Args:
+            - state (torch.tensor) : a 2D tensor of shape (batch_size, state_size)
+        Returns:
+            - The action (int) : the action to take (in the range 1-300)
+        """
+
+        with torch.no_grad():
+            preferences = self.forward(state)
+        
+        print('state:', state)
+        print('preferences:', preferences)
+        action = torch.argmax(preferences, axis = 1).item()
+
+        return action
+
+    def softmax_to_greedy_action(self, state, tau, greedy_switch=1000):
+        '''
+            Switches from softmax to greedy policy after a certain number of episodes
+
+            Args:
+                - state (torch.tensor) : a 2D tensor of shape (batch_size, state_size)
+                - tau : temperature argument
+                - ep_count : episode count
+                - greedy_switch : episode number to switch to greedy policy
+            Returns:
+                - The action (int) : the action to take (in the range 1-300)
+        '''
+
+        self.action_counter += 1
+
+        if self.action_counter < greedy_switch:
+            action = self.select_action(state, tau)
+        else:
+            action = self.select_greedy_action(state)
+            print("Switched to greedy policy")
+
         return action

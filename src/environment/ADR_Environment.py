@@ -15,7 +15,7 @@ class ADR_Environment(BaseEnvironment):
         self.name = "ADR"
 
 
-    def env_init(self, first_debris=4, env_info={}):
+    def env_init(self, first_debris=3, env_info={}):
         
         # we only set the environment parameters at the first episode
         if env_info != {}:
@@ -124,7 +124,7 @@ class ADR_Environment(BaseEnvironment):
 
     
 
-    def env_start(self, first_debris=4):
+    def env_start(self, first_debris=3):
         print("\nENV START\n") if self.debug else None
         reward = 0.0
         is_terminal = False
@@ -186,7 +186,7 @@ class ADR_Environment(BaseEnvironment):
             print('time differences: ', (otv.epoch - target_debris.epoch))
 
         self.action_is_legal = self.is_legal(action , cv , dt_min)
-        if not self.action_is_legal:
+        if not self.action_is_legal and self.debug:
             print('max fuel used')
 
         # Get reward based on action

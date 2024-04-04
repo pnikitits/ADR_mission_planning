@@ -4,7 +4,7 @@ agent_parameters:
     num_hidden_units: 256
     num_actions: 10
   optimizer_config:
-    step_size: 0.001 # learning rate of the optimizer AND step size in TD-Update
+    step_size: 0.005 # learning rate of the optimizer AND step size in TD-Update
     beta_m: 0.9
     beta_v: 0.999
     epsilon: 0.00000001
@@ -13,7 +13,7 @@ agent_parameters:
   num_replay_updates_per_step: 4
   gamma: 0.99
   tau: 0.1
-  seed: 4
+  seed: 8
 
 experiment_parameters:
   num_runs: 1
@@ -24,7 +24,7 @@ experiment_parameters:
 
 environment_parameters:
   total_n_debris: 10 # TODO gets len debris after datareader
-  dv_max_per_mission: 4 # * u.km / u.s
+  dv_max_per_mission: 1.0868 # * u.km / u.s
   dt_max_per_mission: 100 # * u.day
   dt_max_per_transfer: 30 # * u.day 
   priority_is_on : False

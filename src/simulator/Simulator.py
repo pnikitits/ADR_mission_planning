@@ -66,12 +66,6 @@ class Simulator:
         # Set the target from the action
         target_debris = self.debris_list[action[0]].poliastro_orbit
 
-        # DEBUG: print the otv and target elements
-        # print('OTV Elements before')
-        # print(self.otv_orbit.a, self.otv_orbit.ecc, self.otv_orbit.inc, self.otv_orbit.raan, self.otv_orbit.argp, self.otv_orbit.nu)
-        # print('Target Elements before')
-        # print(target_debris.a, target_debris.ecc, target_debris.inc, target_debris.raan, target_debris.argp, target_debris.nu)
-
         # ---- Inclination change
         inc_change = CustomManeuvres.simple_inc_change(self.otv_orbit, target_debris)
 
@@ -121,15 +115,6 @@ class Simulator:
         total_dv = hoh_change.get_total_cost() + raan_change.get_total_cost() + inc_change.get_total_cost()
         min_time = hoh_change.get_total_time() + raan_change.get_total_time() + inc_change.get_total_time()
 
-
-        # Propagate with the extra time after the action
-        extra_time = action[1] * u.day - min_time
-        # print(extra_time)
-        # if extra_time.value > 0:
-        #     self.otv_orbit = self.otv_orbit.propagate(extra_time)
-        #     for i , debris in enumerate(self.debris_list):
-        #         self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(extra_time)
-
         return total_dv , min_time
 
 
@@ -142,8 +127,6 @@ class Simulator:
         np.random.seed(42) # !!!
         
         debris_list = []
-
-        np.random.seed(42)
 
         for norad_id in range(n):
             min_a = 6371 + 200
@@ -188,6 +171,7 @@ class Simulator:
             
             i +=1
 
+        # if no filtering on raan:
         
         # for i in range(n):
         #     norad_id = dataset[0][i]

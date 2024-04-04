@@ -21,13 +21,8 @@ class State:
         
         self.removal_step += 1
         self.number_debris_left -= 1
-        # self.dt_left -= action[1] # NOT dt_min ?
         self.dt_left -= dt_min.to(u.day).value
-        
-        #print(f"--- Taking action {action}: 'dv={cv} , dt={dt_min}")
-
-        # print(f"{otv}")
-        # print(f"{target}")
+    
 
         self.dv_left -= cv.to(u.km/u.s).value
         # Update current removing debris after computing CB
@@ -47,9 +42,6 @@ class State:
         p_list = np.zeros(len(self.priority_list)).tolist()
         if access_priority_list:
             p_list = self.priority_list
-
-        #print(f"Priority list: {p_list}")
-        #print(f"Binary flags: {self.binary_flags}")
 
         return [self.removal_step , 
                 self.number_debris_left , 

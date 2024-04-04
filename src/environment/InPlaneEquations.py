@@ -38,7 +38,6 @@ def hohmann_time(r1 , r2):
 
 
 
-
 def phase_time(otv , target):
     
     r1 = otv.a.to(u.m)
@@ -88,7 +87,3 @@ def Cv(r1, r2):
 
     # Return dv
     return dv
-
-
-# if __name__ == "__main__":
-#     print(hohmann_time(r1=6400*u.km , r2=6500*u.km))

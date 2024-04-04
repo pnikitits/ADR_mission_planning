@@ -28,12 +28,12 @@ def strat_1_dv(otv:Debris , target:Debris, debug = False):
     # dv steps
     # 1. Inclination change
     dt_i = phase_for_i(otv=otv)
-    otv.update(dt=dt_i) # ma 0 or 180 to check
+    otv.update(dt=dt_i) 
     target.update(dt=dt_i) # propagate target position
     
     # 2. Raan change
     dt_raan = phase_for_raan(otv=otv)
-    otv.update(dt=dt_raan) # ma 90 or 270 to check
+    otv.update(dt=dt_raan) 
     target.update(dt=dt_raan) # propagate target position
 
     # 3. Hohmann

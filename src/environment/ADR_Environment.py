@@ -132,7 +132,6 @@ class ADR_Environment(BaseEnvironment):
         # values update
 
         observation = self.env_init(first_debris)
-        # print(observation)
 
         print('\n ----- Starting Episode ---- \n') if self.debug else None
 
@@ -140,7 +139,6 @@ class ADR_Environment(BaseEnvironment):
 
     def update_debris_pos(self, action):
         # Iterate through debris list to update positions
-        # TODO: REMOVE THIS
         for debris in self.debris_list:
             debris.update(action[1]*u.day)
         
@@ -170,7 +168,7 @@ class ADR_Environment(BaseEnvironment):
         # print(f"Action: {action} , otv at: {self.state.current_removing_debris}") # If the action is not legal by binary flags, the propagation does NOT work
         # print(f"Next binary flag: {self.state.binary_flags[action[0]]}")
         if self.state.binary_flags[action[0]] == 1:
-            print('illegal binary flag')
+            print('illegal binary flag') if self.debug else None
             return (0 , self.state.to_list() , True)
             
 
@@ -182,12 +180,12 @@ class ADR_Environment(BaseEnvironment):
         otv = self.simulator.otv_orbit
         diff = otv.r - target_debris.r
         if np.max(diff) > 0.1 * u.km:
-            print('distance between otv and target debris: ', otv.r - target_debris.r)
-            print('time differences: ', (otv.epoch - target_debris.epoch))
+            print('distance between otv and target debris: ', otv.r - target_debris.r) if self.debug else None
+            print('time differences: ', (otv.epoch - target_debris.epoch)) if self.debug else None
 
         self.action_is_legal = self.is_legal(action , cv , dt_min)
         if not self.action_is_legal and self.debug:
-            print('max fuel used')
+            print('max fuel used') if not self.debug_list[3] else None
 
         # Get reward based on action
         reward = self.compute_reward(action)
@@ -204,13 +202,6 @@ class ADR_Environment(BaseEnvironment):
         # Update the state
         self.state.transition_function(action=action , cv=cv , dt_min=dt_min, priority_debris=priority_debris)
 
-        #if self.debug:
-        #    print(' -------- New state ------')
-        #    print(self.state.to_list())
-        #    print(' --- BINARY FLAGS -- ')
-        #    print(self.state.binary_flags)
-
-
         return (reward, self.state.to_list(), is_terminal)
 
 
@@ -220,7 +211,9 @@ class ADR_Environment(BaseEnvironment):
 
     
     def action_dict(self):
-        # Used in the case where the agent can select the dt per maneouvre
+        '''
+            Used in the case where the agent can select the dt per maneouvre
+        '''
         dict = {}
         i = 0
         for debris in range(self.total_n_debris):
@@ -230,7 +223,9 @@ class ADR_Environment(BaseEnvironment):
         return dict
     
     def no_time_action_dict(self):
-        # Use the in the case where the agent can only select the debris
+        '''
+            Use the in the case where the agent can only select the debris
+        '''
         dict = {}
         i = 0
         for debris in range(self.total_n_debris):
@@ -255,16 +250,11 @@ class ADR_Environment(BaseEnvironment):
 
             # priority_debris = random.randint(0, self.total_n_debris-1)
         return priority_debris
-
-    def init_debris(self):
-        pass
-
-    def init_debris_from_data(self):
-        pass
-
         
     def get_term_reason(self):
-        # Return 1 if terminal state caused by this condition
+        '''
+            Return 1 if terminal state caused by this condition
+        '''
         impossible_dt = hash(not self.debug_list[0])
         time_limit = hash(not self.debug_list[1])
         impossible_binary_flag = hash(not self.debug_list[2])

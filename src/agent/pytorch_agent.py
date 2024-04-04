@@ -140,6 +140,7 @@ class Agent(BaseAgent):
         # transform all batches into tensors
         non_final_mask = torch.tensor([not s for s in batch.terminal], device=self.device, dtype=torch.int64)
 
+
         batch_next_state_np = np.stack(batch.next_state)
         non_final_next_states = torch.from_numpy(batch_next_state_np).to(device=self.device, dtype=torch.float32).squeeze(1)
 
@@ -154,16 +155,29 @@ class Agent(BaseAgent):
         state_action_values = self.policy_network(state_batch).gather(1, action_batch)
 
         # Compute V(s_{t+1}) for all next states.
-        next_state_values = torch.zeros(self.replay_buffer.minibatch_size, device=self.device)
+        # next_state_values = torch.zeros(self.replay_buffer.minibatch_size, device=self.device)
+
+        # Use a mask to overrride the Q values of terminal states to 0
         with torch.no_grad():
-            next_state_values[non_final_mask] = self.target_network(non_final_next_states).max(1).values
+            # next_state_values[non_final_mask] = self.target_network(non_final_next_states).max(1).values
+            next_state_values_before_mask = self.target_network(non_final_next_states).max(1).values
+            print('values before masking = ', next_state_values_before_mask)
+            next_state_values = next_state_values_before_mask * non_final_mask
+            print('values after masking = ', next_state_values)
 
         # Compute the expected Q values (TD targets)
         expected_state_action_values = (next_state_values * self.discount) + reward_batch
 
+        # Check the values
+        print("state_action_values = ",state_action_values)
+        print("expected_state_action_values = ",expected_state_action_values)
+
         # Compute Huber loss
         criterion = nn.SmoothL1Loss()
         loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
+
+        # Check the loss
+        print("loss = ",loss)
 
         # Optimize the model
         self.optimizer.zero_grad()

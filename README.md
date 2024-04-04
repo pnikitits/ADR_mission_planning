@@ -2,37 +2,21 @@
 
 ## Project structure
 ```
-├── data                                        # a
-├── notebooks                                   # b
-│   └── 1.0-exploratory-data-analysis.ipynb     # c
-├── results                                     # d
-│   └── python                                  # e
-├── src                                         # f
-│   ├── agent                                   # g
-│   ├── config                                  # g
-│   ├── environment                             # g
-│   ├── rlglue                                  # g
-│   ├── config                                  # g
-│   ├── simulator                               # g
-│   └── trainer                                 # g
-├── exhaustive_search.ipynb                     # g
-├── hyperparams_sweep.py                        # g
-├── main.py                                     # g
-
-
-
+├── data                                        # Iridium-33 dataset
+├── notebooks                                   # Notebooks
+│   └── 1.0-exploratory-data-analysis.ipynb     # Notebook for Exploratory data analysis
+├── results                                     # Results (exhaustive search results)
+├── src                                         # Source folder
+│   ├── agent                                   # Agent (replay buffer, action-value network...)
+│   ├── config                                  # Config files for all experiments (HPO, exhaustive search...)
+│   ├── environment                             # Environment (Space physics equation, transfer strategy...)
+│   ├── rlglue                                  # RL-Glue framework (low level protocol to connect agent/env/experiment)
+│   ├── simulator                               # Poliastro simulator (to simulate maneuver, propagation...)
+│   └── trainer                                 # Trainer function to run the RL experiment
+├── exhaustive_search.ipynb                     # Exhaustive search 
+├── hyperparams_sweep.py                        # Hyper-Parameter Optimization via Weights and Biases
+├── main.py                                     # Main experiment (link the trainer to the config file + Weights and Biases) 
 ```
-+---data
-+---notebooks
-+---results
-+---src
-    +---agent
-    +---config
-    +---environment
-    +---rlglue
-    +---simulator
-    +---trainer
-
 
 ## Dependencies
 To install dependencies:

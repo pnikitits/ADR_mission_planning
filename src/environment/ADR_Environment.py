@@ -28,7 +28,7 @@ class ADR_Environment(BaseEnvironment):
             self.random_first_debris = env_info['random_first_debris']
 
         # Debugging
-        self.debug = True
+        self.debug = False
         self.debug_list = [0, 0, 0, 0]
 
         self.fuel_uses_in_episode = [] # to log the fuel use
@@ -39,7 +39,7 @@ class ADR_Environment(BaseEnvironment):
             self.first_debris = random.randint(0, self.total_n_debris-1)
         else:
             self.first_debris = first_debris
-            print('first debris: ', self.first_debris)
+            print('first debris: ', self.first_debris) if self.debug else None
 
         self.simulator = Simulator(starting_index=self.first_debris , n_debris=self.total_n_debris)
 
@@ -160,12 +160,12 @@ class ADR_Environment(BaseEnvironment):
 
         print("\n -----  ENV STEP ----- \n") if self.debug else None
 
-        print('action_key: ', action_key)
+        print('action_key: ', action_key) if self.debug else None
 
         # Convert action key from NN into action (next_debris_norad_id , dt_given)
         action = self.action_space[action_key]
 
-        print('converted action: ', action)
+        print('converted action: ', action) if self.debug else None
 
         # print(f"Action: {action} , otv at: {self.state.current_removing_debris}") # If the action is not legal by binary flags, the propagation does NOT work
         # print(f"Next binary flag: {self.state.binary_flags[action[0]]}")

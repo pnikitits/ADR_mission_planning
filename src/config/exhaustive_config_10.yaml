@@ -16,17 +16,17 @@ agent_parameters:
   seed: 8
 
 experiment_parameters:
-  num_runs: 1
-  num_episodes: 10000
-  timeout: 10000
+  num_runs: 3
+  num_episodes: 500
+  timeout: 2000
   gpu_use: True
   track_wandb: True
 
 environment_parameters:
   total_n_debris: 10 # TODO gets len debris after datareader
-  dv_max_per_mission: 1.0868 # * u.km / u.s
+  dv_max_per_mission: 1.1 # * u.km / u.s
   dt_max_per_mission: 100 # * u.day
   dt_max_per_transfer: 30 # * u.day 
   priority_is_on : False
   time_based_action : False
-  random_first_debris: False # To set the first debris, use env_start
+  random_first_debris: True # To set the first debris, use env_start

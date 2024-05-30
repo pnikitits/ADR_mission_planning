@@ -18,8 +18,8 @@ class Debris:
 class Simulator:
     def __init__(self , starting_index=1 , n_debris=10):
         # Initialise the debris dictionary and assign the otv to an Orbit
-        # self.debris_list = self.init_random_debris(n=n_debris) 
-        self.debris_list = self.debris_from_dataset(n=n_debris) #le dataset contient 320 debris
+        self.debris_list = self.init_random_debris(n=n_debris) 
+        # self.debris_list = self.debris_from_dataset(n=n_debris) #le dataset contient 320 debris
         check_debris = False
         if check_debris:
             for idx, target_debris in enumerate(self.debris_list):
@@ -138,11 +138,11 @@ class Simulator:
 
         for norad_id in range(n):
             min_a = 6371 + 200
-            max_a = 6371 + 2000
+            max_a = 6371 + 10000
             a = np.random.uniform(min_a, max_a) * u.km
             ecc = 0 * u.one
-            inc = np.random.uniform(0, 10) * u.deg
-            raan = np.random.uniform(0, 10) * u.deg
+            inc = np.random.uniform(0, 45) * u.deg
+            raan = np.random.uniform(0, 45) * u.deg
             argp = 0 * u.deg
             nu = np.random.uniform(-180, 180) * u.deg
 

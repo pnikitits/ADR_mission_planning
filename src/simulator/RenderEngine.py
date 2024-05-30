@@ -145,7 +145,7 @@ class MyApp(ShowBase):
         # circle_points = make_circle(radius=1 , n_points=100 , center=(0,0,0) , rotation=(0,0,0))
         # self.line_manager.make_line('circle' , circle_points , color=(0,1,0,1) , thickness=2.0)
 
-        self.make_debris_trajectory()
+        # self.make_debris_trajectory()
 
 
 

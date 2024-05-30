@@ -48,7 +48,7 @@ class Simulator:
         return DV_required , DT_required
 
 
-    def strategy_1(self , action, render=False):
+    def strategy_1(self , action, render=False, step_sec=5):
         """
         Strategy 1 defined in transfer strategies slides
         1. Inc
@@ -56,22 +56,9 @@ class Simulator:
         3. Hohmann
         """
 
-        if render:
-            # Initialize the dataframe
-            column_names = ["otv"] + [f'debris{i+1}' for i in range(len(self.debris_list))]
-            location_frames_df = pd.DataFrame(columns=column_names)
-
-        # Force the eccentricity to 0
-        # self.otv_orbit.ecc = 0 * u.one
 
         # Set the target from the action
         target_debris = self.debris_list[action[0]].poliastro_orbit
-
-        # DEBUG: print the otv and target elements
-        # print('OTV Elements before')
-        # print(self.otv_orbit.a, self.otv_orbit.ecc, self.otv_orbit.inc, self.otv_orbit.raan, self.otv_orbit.argp, self.otv_orbit.nu)
-        # print('Target Elements before')
-        # print(target_debris.a, target_debris.ecc, target_debris.inc, target_debris.raan, target_debris.argp, target_debris.nu)
 
         # ---- Inclination change
         inc_change = CustomManeuvres.simple_inc_change(self.otv_orbit, target_debris)
@@ -79,14 +66,13 @@ class Simulator:
         # Get the transfer time of the hoh_phas
         transfer_time = inc_change.get_total_time()
 
+        # Apply the maneuver to the otv
+        self.otv_orbit, inc_frames = self.otv_orbit.apply_maneuver_custom(inc_change, copy.deepcopy(self.debris_list) if render else None, step_sec=step_sec, render=render)
+
         # Propagate all debris to the end of the transfer
         for i , debris in enumerate(self.debris_list):
             self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)
         
-        # Apply the maneuver to the otv
-        self.otv_orbit, inc_frames = self.otv_orbit.apply_maneuver_custom(inc_change)
-        
-
 
         # ---- Raan change
         target_debris = self.debris_list[action[0]].poliastro_orbit
@@ -95,12 +81,12 @@ class Simulator:
         # Get the transfer time of the hoh_phas
         transfer_time = raan_change.get_total_time()
 
+        # Apply the maneuver to the otv
+        self.otv_orbit, raan_frames = self.otv_orbit.apply_maneuver_custom(raan_change, copy.deepcopy(self.debris_list) if render else None, step_sec=step_sec, render=render)
+
         # Propagate all debris to the end of the transfer
         for i , debris in enumerate(self.debris_list):
             self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)
-        
-        # Apply the maneuver to the otv
-        self.otv_orbit, raan_frames = self.otv_orbit.apply_maneuver_custom(raan_change)
         
 
         # ---- Hohmann
@@ -110,13 +96,12 @@ class Simulator:
         # Get the transfer time of the hoh_phas
         transfer_time = hoh_change.get_total_time()
 
+        # Apply the maneuver to the otv
+        self.otv_orbit, hoh_frames = self.otv_orbit.apply_maneuver_custom(hoh_change, copy.deepcopy(self.debris_list) if render else None, step_sec=step_sec, render=render)
+
         # Propagate all debris to the end of the transfer
         for i , debris in enumerate(self.debris_list):
-            self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)
-        
-        # Apply the maneuver to the otv
-        self.otv_orbit, hoh_frames = self.otv_orbit.apply_maneuver_custom(hoh_change)
-        
+            self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)      
 
         # Total resources used
         total_dv = hoh_change.get_total_cost() + raan_change.get_total_cost() + inc_change.get_total_cost()
@@ -132,6 +117,8 @@ class Simulator:
         #         self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(extra_time)
 
         if render:
+            # Concat the dataframes
+            location_frames_df = pd.concat([inc_frames , raan_frames , hoh_frames] , axis=0)
             return location_frames_df
         else:
             return total_dv , min_time

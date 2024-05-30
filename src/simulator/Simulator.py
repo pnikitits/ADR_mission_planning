@@ -84,7 +84,7 @@ class Simulator:
             self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)
         
         # Apply the maneuver to the otv
-        self.otv_orbit = self.otv_orbit.apply_maneuver_custom(inc_change)
+        self.otv_orbit, inc_frames = self.otv_orbit.apply_maneuver_custom(inc_change)
         
 
 
@@ -100,7 +100,7 @@ class Simulator:
             self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)
         
         # Apply the maneuver to the otv
-        self.otv_orbit = self.otv_orbit.apply_maneuver_custom(raan_change)
+        self.otv_orbit, raan_frames = self.otv_orbit.apply_maneuver_custom(raan_change)
         
 
         # ---- Hohmann
@@ -115,7 +115,7 @@ class Simulator:
             self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)
         
         # Apply the maneuver to the otv
-        self.otv_orbit = self.otv_orbit.apply_maneuver_custom(hoh_change)
+        self.otv_orbit, hoh_frames = self.otv_orbit.apply_maneuver_custom(hoh_change)
         
 
         # Total resources used

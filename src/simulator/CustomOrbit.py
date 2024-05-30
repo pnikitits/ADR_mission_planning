@@ -697,7 +697,7 @@ class Orbit(OrbitCreationMixin):
         if render:
             return res, df
         else:
-            return res
+            return res, None
     
         
 

@@ -1,16 +1,12 @@
 from astropy import units as u
-
 from poliastro.bodies import Earth
-from poliastro.twobody import Orbit
+from src.simulator.CustomOrbit import Orbit
 from poliastro.plotting import OrbitPlotter3D
-
 import src.simulator.CustomManeuvres as CustomManeuvres
-
 import copy
 import numpy as np
-
 import scipy.io
-
+import pandas as pd
 
 class Debris:
     def __init__(self , poliastro_orbit , norad_id):
@@ -52,13 +48,18 @@ class Simulator:
         return DV_required , DT_required
 
 
-    def strategy_1(self , action):
+    def strategy_1(self , action, render=False):
         """
         Strategy 1 defined in transfer strategies slides
         1. Inc
         2. Raan
         3. Hohmann
         """
+
+        if render:
+            # Initialize the dataframe
+            column_names = ["otv"] + [f'debris{i+1}' for i in range(len(self.debris_list))]
+            location_frames_df = pd.DataFrame(columns=column_names)
 
         # Force the eccentricity to 0
         # self.otv_orbit.ecc = 0 * u.one
@@ -83,7 +84,7 @@ class Simulator:
             self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)
         
         # Apply the maneuver to the otv
-        self.otv_orbit = self.otv_orbit.apply_maneuver(inc_change)
+        self.otv_orbit = self.otv_orbit.apply_maneuver_custom(inc_change)
         
 
 
@@ -99,7 +100,7 @@ class Simulator:
             self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)
         
         # Apply the maneuver to the otv
-        self.otv_orbit = self.otv_orbit.apply_maneuver(raan_change)
+        self.otv_orbit = self.otv_orbit.apply_maneuver_custom(raan_change)
         
 
         # ---- Hohmann
@@ -114,7 +115,7 @@ class Simulator:
             self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)
         
         # Apply the maneuver to the otv
-        self.otv_orbit = self.otv_orbit.apply_maneuver(hoh_change)
+        self.otv_orbit = self.otv_orbit.apply_maneuver_custom(hoh_change)
         
 
         # Total resources used
@@ -130,7 +131,10 @@ class Simulator:
         #     for i , debris in enumerate(self.debris_list):
         #         self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(extra_time)
 
-        return total_dv , min_time
+        if render:
+            return location_frames_df
+        else:
+            return total_dv , min_time
 
 
 

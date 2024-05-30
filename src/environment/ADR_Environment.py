@@ -170,7 +170,7 @@ class ADR_Environment(BaseEnvironment):
         # print(f"Action: {action} , otv at: {self.state.current_removing_debris}") # If the action is not legal by binary flags, the propagation does NOT work
         # print(f"Next binary flag: {self.state.binary_flags[action[0]]}")
         if self.state.binary_flags[action[0]] == 1:
-            print('illegal binary flag')
+            print('illegal binary flag') if self.debug else None
             return (0 , self.state.to_list() , True)
             
 

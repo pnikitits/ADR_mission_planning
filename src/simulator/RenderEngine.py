@@ -98,9 +98,9 @@ class MyApp(ShowBase):
         current_row = self.data.loc[self.current_frame]
         
         self.current_frame += 1
-        if self.current_frame == self.n_frames:
+        if self.current_frame == self.n_frames-1:
             self.current_frame = 0
-            
+
             for debris_node in self.debris_nodes:
                 debris_node.show()
 
@@ -111,11 +111,32 @@ class MyApp(ShowBase):
         otv_pos = np.array([float(num) for num in otv_pos_str])
         self.otv_node.setPos(otv_pos[0] , otv_pos[1] , otv_pos[2])
 
+        # otv rotation
+        next_row = self.data.loc[self.current_frame+1]
+        otv_next_pos_str = next_row['otv'].strip("[]").split()
+        otv_next_pos = np.array([float(num) for num in otv_next_pos_str])
+        otv_dir = otv_next_pos - otv_pos
+        otv_dir = otv_dir / np.linalg.norm(otv_dir)
+        self.otv_node.setH(np.degrees(np.arctan2(otv_dir[1] , otv_dir[0])))
+        self.otv_node.setP(90 + np.degrees(np.arcsin(otv_dir[2])))
+        self.otv_node.setR(0)
+
+
         # debris
         for i in range(1 , self.n_debris):
             debris_i_pos_str = current_row[f'debris{i}'].strip("[]").split()
             debris_i_pos = np.array([float(num) for num in debris_i_pos_str])
             self.debris_nodes[i].setPos(debris_i_pos[0] , debris_i_pos[1] , debris_i_pos[2])
+
+            # debris rotation
+            debris_next_pos_str = next_row[f'debris{i}'].strip("[]").split()
+            debris_next_pos = np.array([float(num) for num in debris_next_pos_str])
+            debris_dir = debris_next_pos - debris_i_pos
+            debris_dir = debris_dir / np.linalg.norm(debris_dir)
+            self.debris_nodes[i].setH(np.degrees(np.arctan2(debris_dir[1] , debris_dir[0])))
+            self.debris_nodes[i].setP(90 + np.degrees(np.arcsin(debris_dir[2])))
+            self.debris_nodes[i].setR(0)
+            
 
 
 
@@ -137,12 +158,12 @@ class MyApp(ShowBase):
     def setup_nodes(self):
         self.make_earth()
 
-        self.otv_node = self.make_sphere(size=0.05 , low_poly=True)
+        self.otv_node = self.make_sphere(size=0.005 , otv=True)
         self.otv_node.reparentTo(self.render)
 
         self.debris_nodes = []
         for _ in range(self.n_debris):
-            node = self.make_sphere(size=0.02 , low_poly=True)
+            node = self.make_sphere(size=0.005 , sat=True)
             node.reparentTo(self.render)
             self.debris_nodes.append(node)
 
@@ -425,10 +446,14 @@ class MyApp(ShowBase):
             self.update_camera_position()
         
 
-    def make_sphere(self , size=1 , low_poly=False):
+    def make_sphere(self , size=1 , low_poly=False , otv=False , sat=False):
         path = "src/Assets/Models/sphere5.obj"
         if low_poly:
             path = "src/Assets/Models/low_poly_sphere.obj"
+        if otv:
+            path = "src/Assets/Models/otv.obj"
+        if sat:
+            path = "src/Assets/Models/sat.obj"
         sphere = self.loader.loadModel(path)
         sphere.setScale(size)
         return sphere

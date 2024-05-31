@@ -16,7 +16,7 @@ class Debris:
 
 
 class Simulator:
-    def __init__(self , starting_index=1 , n_debris=10):
+    def __init__(self , starting_index=1 , n_debris=10, starting_fuel=1000):
         # Initialise the debris dictionary and assign the otv to an Orbit
         self.debris_list = self.init_random_debris(n=n_debris) 
         # self.debris_list = self.debris_from_dataset(n=n_debris) #le dataset contient 320 debris
@@ -31,6 +31,7 @@ class Simulator:
     
 
         self.otv_orbit = copy.copy(self.debris_list[starting_index].poliastro_orbit)
+        self.current_fuel = starting_fuel
         
 
     def simulate_action(self , action):
@@ -68,6 +69,9 @@ class Simulator:
 
         # Apply the maneuver to the otv
         self.otv_orbit, inc_frames = self.otv_orbit.apply_maneuver_custom(inc_change, copy.deepcopy(self.debris_list) if render else None, step_sec=step_sec, render=render)
+        # Append the current fuel to the frames df
+        inc_frames['fuel'] = self.current_fuel if render else None
+        self.current_fuel -= inc_change.get_total_cost().value
 
         # Propagate all debris to the end of the transfer
         for i , debris in enumerate(self.debris_list):
@@ -83,6 +87,9 @@ class Simulator:
 
         # Apply the maneuver to the otv
         self.otv_orbit, raan_frames = self.otv_orbit.apply_maneuver_custom(raan_change, copy.deepcopy(self.debris_list) if render else None, step_sec=step_sec, render=render)
+        # Append the current fuel to the frames df
+        raan_frames['fuel'] = self.current_fuel if render else None
+        self.current_fuel -= inc_change.get_total_cost().value
 
         # Propagate all debris to the end of the transfer
         for i , debris in enumerate(self.debris_list):
@@ -98,6 +105,9 @@ class Simulator:
 
         # Apply the maneuver to the otv
         self.otv_orbit, hoh_frames = self.otv_orbit.apply_maneuver_custom(hoh_change, copy.deepcopy(self.debris_list) if render else None, step_sec=step_sec, render=render)
+        # Append the current fuel to the frames df
+        hoh_frames['fuel'] = self.current_fuel if render else None
+        self.current_fuel -= inc_change.get_total_cost().value
 
         # Propagate all debris to the end of the transfer
         for i , debris in enumerate(self.debris_list):
@@ -119,6 +129,8 @@ class Simulator:
         if render:
             # Concat the dataframes
             location_frames_df = pd.concat([inc_frames , raan_frames , hoh_frames] , axis=0)
+            # Add a column for the action
+            location_frames_df['target_index'] = action[0]
             return location_frames_df
         else:
             return total_dv , min_time

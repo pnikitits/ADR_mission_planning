@@ -31,7 +31,7 @@ class MyApp(ShowBase):
         print(self.n_frames)
 
         row_0 = self.data.loc[self.current_frame]
-        self.n_debris = len(row_0) - 2
+        self.n_debris = len(row_0) - 3
         
 
         self.setup_scene()
@@ -183,15 +183,16 @@ class MyApp(ShowBase):
 
     def make_debris_trajectory(self):
         
-        for i in range(2,3):
-            all_points = []
-            for j in range(len(self.data)):
-                row = self.data.loc[j]
-                debris_i_pos_str = row[f'debris{i}'].strip("[]").split()
-                debris_i_pos = tuple(np.array([float(num) for num in debris_i_pos_str]))
-                all_points.append(debris_i_pos)
+        all_points = []
+        for j in range(len(self.data)):
+            row = self.data.loc[j]
+            # Get the vaue in the target_index column
+            target_idx = self.data.loc[j]['target_index']
+            debris_i_pos_str = row[f'debris{target_idx}'].strip("[]").split()
+            debris_i_pos = tuple(np.array([float(num) for num in debris_i_pos_str]))
+            all_points.append(debris_i_pos)
 
-            self.line_manager.make_line(f'debris_trajectory_{i}' , all_points , color=(0,1,1,1) , thickness=0.5)
+        self.line_manager.make_line(f'debris_trajectory_{target_idx}' , all_points , color=(0,1,1,1) , thickness=0.5)
 
 
         

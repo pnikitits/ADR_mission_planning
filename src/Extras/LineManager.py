@@ -58,3 +58,5 @@ class LineManager:
 
         # Update the stored NodePath for this line
         self.lines[name] = (lines, node_path)
+
+    

@@ -34,6 +34,7 @@ class MyApp(ShowBase):
         self.n_debris = len(row_0) - 3
         
         self.current_target = row_0['target_index']
+        self.already_deorbited = []
 
         self.setup_scene()
         self.taskMgr.add(self.check_keys, "check_keys_task")
@@ -62,38 +63,17 @@ class MyApp(ShowBase):
             # self.target.update(dt=DT)
 
             
-            
             rotate_object(self.earth , [0.05 , 0 , 0])
             # rotate_object(self.cloud , [0.05 , 0 , 0])
             self.env_visual_update()
-            
-            
-                
-
+        
         return Task.cont
         
 
-    
-
-    
-        
 
     def env_visual_update(self):
-
-
-        self.update_otv_trail()
         self.update_hud()
 
-
-        line_pos = []
-        for pos in self.otv_trail_nodes:
-            if pos != (0,0,0):
-                line_pos.append(pos)
-
-        
-        self.line_manager.update_line('trail_line', line_pos, color=(1, 0, 0, 1))
-
-        
         # Frames updates
         current_row = self.data.loc[self.current_frame]
         
@@ -104,9 +84,13 @@ class MyApp(ShowBase):
             for debris_node in self.debris_nodes:
                 debris_node.show()
 
+            row_0 = self.data.loc[self.current_frame]
+            self.current_target = row_0['target_index']
+
             
 
         # otv
+        self.update_trail('otv' , 'otv_trail' , color=(0.3,1,1,1) , thickness=0.5)
         otv_pos_str = current_row['otv'].strip("[]").split()
         otv_pos = np.array([float(num) for num in otv_pos_str])
         self.otv_node.setPos(otv_pos[0] , otv_pos[1] , otv_pos[2])
@@ -121,9 +105,20 @@ class MyApp(ShowBase):
         self.otv_node.setP(90 + np.degrees(np.arcsin(otv_dir[2])))
         self.otv_node.setR(0)
 
+        
 
         # debris
         for i in range(1 , self.n_debris):
+            # debris trail    
+            # if i in self.already_deorbited:
+            #     self.update_trail(f'debris{i}' , f'debris{i}_trail' , color=(1,1,1,1) , thickness=0.5)
+            if i == self.current_target+1:
+                self.update_trail(f'debris{i}' , f'debris{i}_trail' , color=(1,0,0,1) , thickness=0.5)
+            else:
+                self.update_trail(f'debris{i}' , f'debris{i}_trail' , color=(0.2,0.3,0.3,1) , thickness=0.5)
+
+
+            # debris position
             debris_i_pos_str = current_row[f'debris{i}'].strip("[]").split()
             debris_i_pos = np.array([float(num) for num in debris_i_pos_str])
             self.debris_nodes[i].setPos(debris_i_pos[0] , debris_i_pos[1] , debris_i_pos[2])
@@ -136,7 +131,7 @@ class MyApp(ShowBase):
             self.debris_nodes[i].setH(np.degrees(np.arctan2(debris_dir[1] , debris_dir[0])))
             self.debris_nodes[i].setP(90 + np.degrees(np.arcsin(debris_dir[2])))
             self.debris_nodes[i].setR(0)
-            
+
 
 
 
@@ -147,8 +142,12 @@ class MyApp(ShowBase):
             print('switching target')
             print(self.current_target)
             print(current_row['target_index'])
-            self.make_debris_trajectory(debris_id=current_row['target_index'])
+
             self.debris_nodes[self.current_target+1].hide()
+
+            if self.current_target not in self.already_deorbited:
+                self.already_deorbited.append(self.current_target)
+                
 
         self.current_target = current_row['target_index']
         self.target_label.setText(f"Target: {self.current_target}")
@@ -169,24 +168,10 @@ class MyApp(ShowBase):
 
 
 
-
-        self.otv_trail_nodes = []
-        self.otv_trail_counter = 10
-        self.make_otv_trail()
-
         self.line_manager = LineManager(self.render)
-        self.line_manager.make_line('trail_line', [(0, 0, 0), (0, 0, 0)], color=(1, 0, 0, 1))
         
 
         self.setup_planes_visualisation()
-
-
-        # make a circle
-        # circle_points = make_circle(radius=1 , n_points=100 , center=(0,0,0) , rotation=(0,0,0))
-        # self.line_manager.make_line('circle' , circle_points , color=(0,1,0,1) , thickness=2.0)
-
-        self.make_debris_trajectory(debris_id=self.current_target)
-
 
 
     def make_object(self , elements):
@@ -199,37 +184,20 @@ class MyApp(ShowBase):
         return node
     
 
+    def update_trail(self , name_in_df , name_in_line_manager , n_points=100 , color=(0,1,1,1) , thickness=0.5):
 
-    def make_otv_trail(self):
-        init_pos = (0,0,0) # At first, all the nodes are hidden inside the earth
-        n = 100
+        current_frame = self.current_frame + 1 # last
+        frame_minus_n_points = max(0 , self.current_frame - n_points) # first
 
-        for _ in range(n):
-            node = init_pos
-            self.otv_trail_nodes.append(node)
-
-
-    def update_otv_trail(self):
-        # update every frame
-        self.otv_trail_counter -= 1
-
-        if self.otv_trail_counter <= 0:
-            self.otv_trail_counter = 4
-        else:
-            return
-        
-        self.otv_trail_nodes[0] = self.otv_node.getPos()
-        self.otv_trail_nodes = self.otv_trail_nodes[1:] + [self.otv_trail_nodes[0]]
-
-    def make_debris_trajectory(self , debris_id):
         all_points = []
-        for i in range(len(self.data)):
-            pos = self.data.iloc[i][f'debris{debris_id+1}']
+        for i in range(frame_minus_n_points , current_frame , 10):
+            pos = self.data.iloc[i][name_in_df]
             pos = pos.strip('[]').split()
             pos = tuple([float(num) for num in pos])
             all_points.append(pos)
 
-        self.line_manager.update_line(f'debris_trajectory' , all_points , color=(0,1,1,1) , thickness=0.5)
+        self.line_manager.update_line(name_in_line_manager , all_points , color=color , thickness=thickness)
+
 
         
     def make_earth(self):
@@ -368,10 +336,12 @@ class MyApp(ShowBase):
 
         self.fuel_label = self.add_text_label(text="Fuel: #" , pos=(x_po , y_st - y_sp))
         self.target_label = self.add_text_label(text="Target: #" , pos=(x_po , y_st - 2*y_sp))
+        # self.removed_label = self.add_text_label(text="Removed: []" , pos=(x_po , y_st - 3*y_sp))
         
 
     def update_hud(self):
         self.label_1.setText(f"{self.current_frame}/{self.n_frames}")
+        # self.removed_label.setText(f"Removed: {self.already_deorbited}")
     
 
 

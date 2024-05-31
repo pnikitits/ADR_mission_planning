@@ -33,6 +33,7 @@ class MyApp(ShowBase):
         row_0 = self.data.loc[self.current_frame]
         self.n_debris = len(row_0) - 3
         
+        self.current_target = row_0['target_index']
 
         self.setup_scene()
         self.taskMgr.add(self.check_keys, "check_keys_task")
@@ -99,6 +100,9 @@ class MyApp(ShowBase):
         self.current_frame += 1
         if self.current_frame == self.n_frames:
             self.current_frame = 0
+            
+            for debris_node in self.debris_nodes:
+                debris_node.show()
 
             
 
@@ -112,6 +116,21 @@ class MyApp(ShowBase):
             debris_i_pos_str = current_row[f'debris{i}'].strip("[]").split()
             debris_i_pos = np.array([float(num) for num in debris_i_pos_str])
             self.debris_nodes[i].setPos(debris_i_pos[0] , debris_i_pos[1] , debris_i_pos[2])
+
+
+
+        current_fuel = current_row['fuel']
+        self.fuel_label.setText(f"Fuel: {round(current_fuel/10,1)}%")
+
+        if self.current_target != current_row['target_index']:
+            print('switching target')
+            print(self.current_target)
+            print(current_row['target_index'])
+            self.make_debris_trajectory(debris_id=current_row['target_index'])
+            self.debris_nodes[self.current_target+1].hide()
+
+        self.current_target = current_row['target_index']
+        self.target_label.setText(f"Target: {self.current_target}")
             
         
 
@@ -145,7 +164,7 @@ class MyApp(ShowBase):
         # circle_points = make_circle(radius=1 , n_points=100 , center=(0,0,0) , rotation=(0,0,0))
         # self.line_manager.make_line('circle' , circle_points , color=(0,1,0,1) , thickness=2.0)
 
-        self.make_debris_trajectory()
+        self.make_debris_trajectory(debris_id=self.current_target)
 
 
 
@@ -181,19 +200,15 @@ class MyApp(ShowBase):
         self.otv_trail_nodes[0] = self.otv_node.getPos()
         self.otv_trail_nodes = self.otv_trail_nodes[1:] + [self.otv_trail_nodes[0]]
 
-    def make_debris_trajectory(self):
-        
+    def make_debris_trajectory(self , debris_id):
         all_points = []
-        for j in range(len(self.data)):
-            row = self.data.loc[j]
-            # Get the vaue in the target_index column
-            target_idx = self.data.loc[j]['target_index']
-            debris_i_pos_str = row[f'debris{target_idx}'].strip("[]").split()
-            debris_i_pos = tuple(np.array([float(num) for num in debris_i_pos_str]))
-            all_points.append(debris_i_pos)
+        for i in range(len(self.data)):
+            pos = self.data.iloc[i][f'debris{debris_id+1}']
+            pos = pos.strip('[]').split()
+            pos = tuple([float(num) for num in pos])
+            all_points.append(pos)
 
-        self.line_manager.make_line(f'debris_trajectory_{target_idx}' , all_points , color=(0,1,1,1) , thickness=0.5)
-
+        self.line_manager.update_line(f'debris_trajectory' , all_points , color=(0,1,1,1) , thickness=0.5)
 
         
     def make_earth(self):
@@ -329,6 +344,9 @@ class MyApp(ShowBase):
 
         self.pause_label = self.add_text_label(text="II" , pos=(0 , y_st))
         self.pause_label.hide()
+
+        self.fuel_label = self.add_text_label(text="Fuel: #" , pos=(x_po , y_st - y_sp))
+        self.target_label = self.add_text_label(text="Target: #" , pos=(x_po , y_st - 2*y_sp))
         
 
     def update_hud(self):

@@ -37,6 +37,11 @@ class Agent(BaseAgent):
         self.num_replay = agent_config["num_replay_updates_per_step"]
         self.discount = agent_config["gamma"]
         self.tau = agent_config["tau"]
+        if agent_config["load_agent"] is not None:
+            self.load(agent_config["load_agent"])
+            print('Agent loaded from:', agent_config["load_agent"])
+        else:
+            print('Agent initialized from scratch')
         self.last_state = None
         self.last_action = None
         self.sum_rewards = 0
@@ -172,3 +177,11 @@ class Agent(BaseAgent):
         # In-place gradient clipping
         torch.nn.utils.clip_grad_value_(self.policy_network.parameters(), 100) 
         self.optimizer.step()
+
+    def load(self, filename):
+        """
+        Load the model from a file
+        """
+        path = 'src/saved_agent/'
+        self.policy_network.load_state_dict(torch.load(path+filename))
+        self.target_network.load_state_dict(self.policy_network.state_dict())

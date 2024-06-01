@@ -14,12 +14,13 @@ agent_parameters:
   gamma: 0.99
   tau: 0.001
   seed: 0
+  load_agent: test2000.pth # null if you don't want to load an agent, saved_agent/agent_name.pth? otherwise
 
 experiment_parameters:
   num_runs: 1
   num_episodes: 2000
   timeout: 2000
-  gpu_use: True
+  gpu_use: False
   track_wandb: True
 
 environment_parameters:

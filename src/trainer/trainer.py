@@ -72,6 +72,11 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
                     "average fuel used":avg_fuel_used,
                     "average time used":avg_time_used,
                     "time step": episode
-                })
-    wandb.log({"avg_reward": np.mean(agent_sum_reward)})
+                }) if experiment_parameters['track_wandb'] else None
+    wandb.log({"avg_reward": np.mean(agent_sum_reward)}) if experiment_parameters['track_wandb'] else None
     #wandb.log({"avg_reward": sum(agent_sum_reward[0])/experiment_parameters["num_episodes"]})
+
+    save_or_not = input('Do you want to save the model? (y/n): ')
+    if save_or_not == 'y':
+        file_name = input('Enter file name: ')
+        torch.save(rl_glue.agent.policy_network.state_dict(), 'src/saved_agent/'+file_name + '.pth')

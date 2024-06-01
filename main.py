@@ -12,10 +12,9 @@ if __name__ == "__main__":
     start_time = time.perf_counter()
 
     current_env = ADR_Environment
-    a = wandb.init()
     
 
-    with open("src/config/exhaustive_config.yaml") as file: # change file name to use different sweep
+    with open("src/config/config.yaml") as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
 
     agent_parameters = config['agent_parameters']
@@ -23,9 +22,7 @@ if __name__ == "__main__":
     environment_parameters = config['environment_parameters']
     print('env info upper: ', environment_parameters )
 
-    weights_file = None #'models/test_weights.pth'
-    agent_parameters['weights_file'] = weights_file
-
+    a = wandb.init() if experiment_parameters['track_wandb'] else None
 
     # Set device
     gpu_use = experiment_parameters['gpu_use']
@@ -39,6 +36,8 @@ if __name__ == "__main__":
     print(device)
     current_agent = Agent
 
+    # track only if wandb is enabled
+    #a = wandb.init() if experiment_parameters['track_wandb'] else None
     
     run_experiment(current_env, current_agent, environment_parameters, agent_parameters, experiment_parameters)
 

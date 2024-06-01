@@ -9,7 +9,7 @@ from src.Extras.Circle import *
 from panda3d.core import AmbientLight , DirectionalLight , Point3 , MouseButton
 from panda3d.core import Vec3 , KeyboardButton , TextureStage , TransparencyAttrib
 from panda3d.core import LightAttrib , NodePath , CardMaker , NodePath , TextNode
-from panda3d.core import AntialiasAttrib, loadPrcFileData
+from panda3d.core import AntialiasAttrib, loadPrcFileData , Point2
 
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
@@ -143,14 +143,14 @@ class MyApp(ShowBase):
             print(self.current_target)
             print(current_row['target_index'])
 
-            self.debris_nodes[self.current_target+1].hide()
+            # self.debris_nodes[self.current_target+1].hide()
 
             if self.current_target not in self.already_deorbited:
                 self.already_deorbited.append(self.current_target)
                 
 
         self.current_target = current_row['target_index']
-        self.target_label.setText(f"Target: {self.current_target}")
+        self.target_label.setText(f"Target: {self.current_target+1}")
             
         
 
@@ -337,11 +337,40 @@ class MyApp(ShowBase):
         self.fuel_label = self.add_text_label(text="Fuel: #" , pos=(x_po , y_st - y_sp))
         self.target_label = self.add_text_label(text="Target: #" , pos=(x_po , y_st - 2*y_sp))
         # self.removed_label = self.add_text_label(text="Removed: []" , pos=(x_po , y_st - 3*y_sp))
+
+        self.otv_label = self.add_text_label(text="OTV" , pos=(0,0) , scale=0.05)
+
+        self.debris_labels = []
+        for i in range(1 , self.n_debris):
+            self.debris_labels.append(self.add_text_label(text=f"Debris {i}" , pos=(0,0) , scale=0.05))
+
         
+        # self.circle_img = self.add_image("src/Assets/Textures/circle.png" , pos=(0 , 0) , scale=0.1)
+
+        
+
+
 
     def update_hud(self):
         self.label_1.setText(f"{self.current_frame}/{self.n_frames}")
         # self.removed_label.setText(f"Removed: {self.already_deorbited}")
+
+
+        otv_screen_pos = self.get_object_screen_pos(self.otv_node)
+        if otv_screen_pos is not None:
+            self.otv_label.setPos(otv_screen_pos[0] + 0.05 , otv_screen_pos[1])
+            
+
+        for i in range(1 , self.n_debris):
+            debris_screen_pos = self.get_object_screen_pos(self.debris_nodes[i])
+            if debris_screen_pos is not None:
+                self.debris_labels[i-1].setPos(debris_screen_pos[0] + 0.05 , debris_screen_pos[1])
+                
+
+        # self.update_image_scale(self.circle_img , 0.1)
+
+
+
     
 
 
@@ -444,8 +473,19 @@ class MyApp(ShowBase):
     def add_image(self, image_path, pos=(0, 0), scale=1, parent=None):
         if parent is None:
             parent = self.render2d  # Use self.render2d if no parent is specified.
+        pos = (pos[0], 0, pos[1])  # Convert 2D position to 3D position
+
+        scale = (scale / self.getAspectRatio(), 1, scale)
+        
+
         img = OnscreenImage(image=image_path, pos=pos, scale=scale, parent=parent)
         img.setTransparency(TransparencyAttrib.MAlpha)
+        return img
+    
+    def update_image_scale(self, image, scale):
+        aspect_ratio = self.getAspectRatio()
+        scale = (scale / aspect_ratio, 1, scale)
+        image.setScale(scale)
 
 
     def on_a_pressed(self):
@@ -469,9 +509,18 @@ class MyApp(ShowBase):
         if is_on:
             loadPrcFileData('', 'multisamples 4')  # Enable MSAA
             self.render.setAntialias(AntialiasAttrib.MAuto)
-    
 
 
-# if __name__ == "__main__":
-#     app = MyApp(data_path="/Users/pierre/Documents/GitHub/Poliastro_Validation/data.csv")
-#     app.run()
+    def get_object_screen_pos(self, obj):
+        # Get the object's position relative to the camera
+        pos3d = self.camera.getRelativePoint(obj, Point3(0, 0, 0))
+        
+        # Project the 3D point to 2D screen coordinates
+        pos2d = Point2()
+        if self.camLens.project(pos3d, pos2d):
+            screen_x = pos2d.getX() * self.getAspectRatio()
+            screen_y = pos2d.getY()
+
+            return screen_x, screen_y
+        else:
+            return None

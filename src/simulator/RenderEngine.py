@@ -6,15 +6,17 @@ from src.Extras.HelperFunctions import *
 from src.Extras.Skybox import *
 from src.Extras.Circle import *
 
-from panda3d.core import AmbientLight , DirectionalLight , Point3 , MouseButton
+from panda3d.core import Point3 , MouseButton , PointLight , Mat4 , AmbientLight
 from panda3d.core import Vec3 , KeyboardButton , TextureStage , TransparencyAttrib
 from panda3d.core import LightAttrib , NodePath , CardMaker , NodePath , TextNode
-from panda3d.core import AntialiasAttrib, loadPrcFileData , Point2
+from panda3d.core import AntialiasAttrib, loadPrcFileData , Point2 , Shader , LMatrix4f
+
 
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from direct.gui.OnscreenText import OnscreenText
 from direct.gui.OnscreenImage import OnscreenImage
+
 
 
 
@@ -51,6 +53,7 @@ class MyApp(ShowBase):
         
         setup_skybox(self.render , self.loader)
         self.setup_camera()
+        
         self.setup_nodes()
         self.setup_lights()
         self.setup_hud()
@@ -73,6 +76,7 @@ class MyApp(ShowBase):
 
     def env_visual_update(self):
         self.update_hud()
+        self.update_shader_inputs()
 
         # Frames updates
         current_row = self.data.loc[self.current_frame]
@@ -202,50 +206,83 @@ class MyApp(ShowBase):
         
     def make_earth(self):
         self.earth = self.make_sphere(size=0.7)
+        self.earth.reparentTo(self.render)
         self.earth.setPos(0, 0, 0)
         self.earth.setHpr(0, 90, 0)
 
-        # Load textures
-        base_texture = self.loader.loadTexture("src/Assets/Textures/earth_albedo.jpg")
-        gloss_texture = self.loader.loadTexture("src/Assets/Textures/earth_specular.jpg")
-        glow_texture = self.loader.loadTexture("src/Assets/Textures/earth_emission.png")
 
-        # Base Texture Stage
-        base_ts = TextureStage('base')
-        base_ts.setMode(TextureStage.MModulate)
-        self.earth.setTexture(base_ts, base_texture)
+        albedo_tex = self.loader.loadTexture("src/Assets/Textures/earth_albedo.jpg")
+        emission_tex = self.loader.loadTexture("src/Assets/Textures/earth_emission.png")
+        specular_tex = self.loader.loadTexture("src/Assets/Textures/earth_specular.jpg")
+        cloud_tex = self.loader.loadTexture('src/Assets/Textures/earth_clouds.jpg')
 
-        # Gloss Texture Stage
-        gloss_ts = TextureStage('gloss')
-        gloss_ts.setMode(TextureStage.MGloss)
-        self.earth.setTexture(gloss_ts, gloss_texture)
 
-        # Glow Texture Stage
-        glow_ts = TextureStage('glow')
-        glow_ts.setMode(TextureStage.MAdd)
-        self.earth.setTexture(glow_ts, glow_texture)
+        ts_albedo = TextureStage('albedo')
+        ts_emission = TextureStage('emission')
+        ts_specular = TextureStage('specular')
+        ts_cloud = TextureStage('cloud')
 
-        self.earth.reparentTo(self.render)
+        self.earth.setTexture(ts_albedo, albedo_tex)
+        self.earth.setTexture(ts_emission, emission_tex)
+        self.earth.setTexture(ts_specular, specular_tex)
+        self.earth.setTexture(ts_cloud, cloud_tex)
 
+        
+        # self.earth.setShaderAuto(False)
+        # self.earth.setShaderOff()
+        self.earth.setAttrib(AntialiasAttrib.make(AntialiasAttrib.MAuto))
+        self.earth.setRenderModeFilled()
+
+
+        self.earth.setShaderInput("albedoMap", albedo_tex)
+        self.earth.setShaderInput("emissionMap", emission_tex)
+        self.earth.setShaderInput("specularMap", specular_tex)
+        self.earth.setShaderInput("cloudMap", cloud_tex)
+
+        
+        
+        self.update_shader_inputs()
+
+    
+        
+
+    def update_shader_inputs(self):
+
+        # Get camera position in world space
+        view_pos = self.camera.getPos(self.render)
+        self.earth.setShaderInput("viewPos", view_pos)
+        
 
 
 
     def setup_lights(self):
-        # Ambient light
-        ambient_light = AmbientLight("ambient_light")
-        ambient_light.setColor((0.1, 0.1, 0.1, 1))
-        ambient_light_node = self.render.attachNewNode(ambient_light)
-        self.render.setLight(ambient_light_node)
+        # Add a light
+        plight = PointLight('plight')
+        plight.setColor((1, 1, 1, 1))
+        self.light_np = self.render.attachNewNode(plight)
+        self.light_np.setPos(10, 0, 0)
+        self.render.setLight(self.light_np)
+        
+        # Create a shadow buffer
+        self.shadowBuffer = self.win.makeTextureBuffer("Shadow Buffer", 1024, 1024)
+        self.earth.setShaderInput("shadowMapSize", 1024)
+        self.shadowTexture = self.shadowBuffer.getTexture()
+        
+        self.depthmap = NodePath("depthmap")
+        self.depthmap.setShader(Shader.load(Shader.SL_GLSL, "src/simulator/shadow_v.glsl", "src/simulator/shadow_f.glsl"))
+        
+        self.earth.setShaderInput("shadowMap", self.shadowTexture)
+        self.earth.setShaderInput("lightSpaceMatrix", self.depthmap.getMat())
+        self.earth.setShaderInput("lightPos", self.light_np.getPos())
 
-        # Directional light
-        directional_light = self.render.attachNewNode("directional_light")
-        d_light = DirectionalLight("d_light")
-        intensity = 4
-        d_light.setColor((intensity, intensity, intensity, 1))
-        d_light_np = directional_light.attachNewNode(d_light)
-        d_light_np.setHpr(45, -15, 0)
-        self.render.setLight(d_light_np)
+        self.earth.setShader(Shader.load(Shader.SL_GLSL, vertex="src/simulator/pbr.vert", fragment="src/simulator/pbr.frag"))
 
+        
+        
+        
+        
+        
+        
 
     def setup_camera(self):
         self.rotation_speed = 50.0
@@ -258,6 +295,10 @@ class MyApp(ShowBase):
 
         self.angle_around_origin = 0.0
         self.elevation_angle = 0.0
+
+        # self.light_angle_around_origin = 0.0
+        # self.light_elevation_angle = 0.0
+
         self.last_mouse_x = 0
         self.last_mouse_y = 0
         
@@ -394,12 +435,16 @@ class MyApp(ShowBase):
             if current_mouse_x != self.last_mouse_x:
                 # Adjust the camera rotation based on the mouse horizontal movement
                 self.angle_around_origin -= (current_mouse_x - self.last_mouse_x) * self.rotation_speed
+                # self.light_angle_around_origin += (current_mouse_x - self.last_mouse_x) * self.rotation_speed
 
             # Check if the mouse has moved vertically
             if current_mouse_y != self.last_mouse_y:
                 # Adjust the camera elevation based on the mouse vertical movement
                 self.elevation_angle += (current_mouse_y - self.last_mouse_y) * self.elevation_speed
                 self.elevation_angle = max(-90, min(90, self.elevation_angle))  # Clamp the elevation angle
+
+                # self.light_elevation_angle -= (current_mouse_y - self.last_mouse_y) * self.elevation_speed
+                # self.light_elevation_angle = max(-90, min(90, self.light_elevation_angle))
 
             self.update_camera_position()
 
@@ -414,6 +459,14 @@ class MyApp(ShowBase):
         
 
     def update_camera_position(self):
+        # print(f'\r{self.angle_around_origin} , {self.elevation_angle}' , end='')
+
+        # Camera
+        if self.angle_around_origin > 360:
+            self.angle_around_origin -= 360
+        if self.angle_around_origin < 0:
+            self.angle_around_origin += 360
+
         radian_angle = np.radians(self.angle_around_origin)
         radian_elevation = np.radians(self.elevation_angle)
         x_pos = self.distance_to_origin * np.sin(radian_angle) * np.cos(radian_elevation)
@@ -422,6 +475,25 @@ class MyApp(ShowBase):
 
         self.camera.setPos(Vec3(x_pos, y_pos, z_pos))
         self.camera.lookAt(Point3(0, 0, 0))
+
+
+        # Light
+        # if self.light_angle_around_origin > 360:
+        #     self.light_angle_around_origin -= 360
+        # if self.light_angle_around_origin < 0:
+        #     self.light_angle_around_origin += 360
+
+        # radian_angle = np.radians(self.light_angle_around_origin)
+        # radian_elevation = np.radians(self.light_elevation_angle)
+        # x_pos = 10 * np.sin(radian_angle) * np.cos(radian_elevation)
+        # y_pos = -10 * np.cos(radian_angle) * np.cos(radian_elevation)
+        # z_pos = 10 * np.sin(radian_elevation)
+
+        # self.plight_np.setPos(Vec3(-y_pos, 0, -x_pos))
+        # self.plight_np.lookAt(Point3(0, 0, 0))
+        
+
+        
         
 
     def check_keys(self, task):

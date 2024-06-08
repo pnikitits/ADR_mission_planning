@@ -18,6 +18,19 @@ from direct.gui.OnscreenText import OnscreenText
 from direct.gui.OnscreenImage import OnscreenImage
 
 
+from screeninfo import get_monitors
+from panda3d.core import loadPrcFileData , WindowProperties
+from direct.showbase.ShowBase import ShowBase
+from direct.gui.DirectGui import DirectButton
+
+# Detect the screen resolution
+monitor = get_monitors()[0]
+screen_width = monitor.width
+screen_height = monitor.height
+
+# Set Panda3D to full screen with the detected resolution
+loadPrcFileData('', 'fullscreen 1')
+loadPrcFileData('', f'win-size {screen_width} {screen_height}')
 
 
 class MyApp(ShowBase):
@@ -43,10 +56,32 @@ class MyApp(ShowBase):
         self.accept("space" , self.on_space_pressed)
         self.game_is_paused = False
         self.accept("a" , self.on_a_pressed)
-        
-        self.taskMgr.doMethodLater(1/30, self.renderer, 'renderer')
 
+        self.accept('c' , self.on_c_pressed)
+
+        self.accept("escape", self.toggle_fullscreen)
+        self.accept("x" , self.userExit)
         
+        self.fullscreen = True
+        
+        
+        
+        self.taskMgr.doMethodLater(1/60, self.renderer, 'renderer')
+
+
+
+    def toggle_fullscreen(self):
+        wp = WindowProperties()
+        if self.fullscreen:
+            # Switch to windowed mode
+            wp.setFullscreen(False)
+            wp.setSize(800, 600)
+        else:
+            # Switch to full-screen mode
+            wp.setFullscreen(True)
+            wp.setSize(screen_width, screen_height)
+        self.fullscreen = not self.fullscreen
+        self.win.requestProperties(wp)        
 
 
     def setup_scene(self):
@@ -60,14 +95,13 @@ class MyApp(ShowBase):
 
 
     def renderer(self, task):
-        
+
+        self.update_hud()
+
         if not self.game_is_paused:
             # self.otv.update(dt=DT)
             # self.target.update(dt=DT)
-
-            
-            rotate_object(self.earth , [0.05 , 0 , 0])
-            # rotate_object(self.cloud , [0.05 , 0 , 0])
+            rotate_object(self.earth , [0.025 , 0 , 0])
             self.env_visual_update()
         
         return Task.cont
@@ -75,7 +109,7 @@ class MyApp(ShowBase):
 
 
     def env_visual_update(self):
-        self.update_hud()
+        
         self.update_shader_inputs()
 
         # Frames updates
@@ -210,22 +244,28 @@ class MyApp(ShowBase):
         self.earth.setPos(0, 0, 0)
         self.earth.setHpr(0, 90, 0)
 
+        self.cloud_value = 1
 
-        albedo_tex = self.loader.loadTexture("src/Assets/Textures/earth_albedo.jpg")
+
+        albedo_tex = self.loader.loadTexture("src/Assets/Textures/earth_bm3.png")
         emission_tex = self.loader.loadTexture("src/Assets/Textures/earth_emission.png")
         specular_tex = self.loader.loadTexture("src/Assets/Textures/earth_specular.jpg")
-        cloud_tex = self.loader.loadTexture('src/Assets/Textures/earth_clouds.jpg')
+        cloud_tex = self.loader.loadTexture('src/Assets/Textures/cloud.png')
+        topography_tex = self.loader.loadTexture('src/Assets/Textures/earth_topography.png')
 
 
         ts_albedo = TextureStage('albedo')
         ts_emission = TextureStage('emission')
         ts_specular = TextureStage('specular')
         ts_cloud = TextureStage('cloud')
+        ts_topography = TextureStage('topography')
+
 
         self.earth.setTexture(ts_albedo, albedo_tex)
         self.earth.setTexture(ts_emission, emission_tex)
         self.earth.setTexture(ts_specular, specular_tex)
         self.earth.setTexture(ts_cloud, cloud_tex)
+        self.earth.setTexture(ts_topography, topography_tex)
 
         
         # self.earth.setShaderAuto(False)
@@ -238,6 +278,7 @@ class MyApp(ShowBase):
         self.earth.setShaderInput("emissionMap", emission_tex)
         self.earth.setShaderInput("specularMap", specular_tex)
         self.earth.setShaderInput("cloudMap", cloud_tex)
+        self.earth.setShaderInput("topographyMap", topography_tex)
 
         
         
@@ -251,6 +292,7 @@ class MyApp(ShowBase):
         # Get camera position in world space
         view_pos = self.camera.getPos(self.render)
         self.earth.setShaderInput("viewPos", view_pos)
+        self.earth.setShaderInput("cloudValue", self.cloud_value)
         
 
 
@@ -290,7 +332,7 @@ class MyApp(ShowBase):
 
         self.distance_to_origin = 10.0
         self.distance_speed = 0.1
-        self.min_dist = 4
+        self.min_dist = 3
         self.max_dist = 16
 
         self.angle_around_origin = 0.0
@@ -369,7 +411,7 @@ class MyApp(ShowBase):
     def setup_hud(self):
         y_st = 0.9
         y_sp = 0.1
-        x_po = -1.3
+        x_po = -1.5
         self.label_1 = self.add_text_label(text="label 1" , pos=(x_po , y_st))
 
         self.pause_label = self.add_text_label(text="II" , pos=(0 , y_st))
@@ -388,7 +430,17 @@ class MyApp(ShowBase):
         
         # self.circle_img = self.add_image("src/Assets/Textures/circle.png" , pos=(0 , 0) , scale=0.1)
 
-        
+        ctrl_x = -1.5
+        ctrl_y = -0.9
+        ctrl_scale = 0.04
+        # controls_label_1 = self.add_text_label(text="A: Toggle Plane Visualisation" , pos=(ctrl_x , ctrl_y+y_sp*6) , scale=0.05 , alignment_mode=TextNode.ALeft)
+        # controls_label_2 = self.add_text_label(text="Z: Show/Hide Plane 4" , pos=(ctrl_x , ctrl_y+y_sp*5) , scale=0.05 , alignment_mode=TextNode.ALeft)
+        controls_label_3 = self.add_text_label(text="Space: Pause/Resume" , pos=(ctrl_x , ctrl_y+y_sp*4) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
+        controls_label_4 = self.add_text_label(text="C: Toggle Clouds" , pos=(ctrl_x , ctrl_y+y_sp*3) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
+        controls_label_5 = self.add_text_label(text="Up/Down: Zoom In/Out" , pos=(ctrl_x , ctrl_y+y_sp*2) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
+        controls_label_6 = self.add_text_label(text="Esc: Toggle Fullscreen" , pos=(ctrl_x , ctrl_y+y_sp) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
+        controls_label_7 = self.add_text_label(text="X: Exit" , pos=(ctrl_x , ctrl_y) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
+
 
 
 
@@ -576,6 +628,11 @@ class MyApp(ShowBase):
             self.pause_label.show()
         else:
             self.pause_label.hide()
+
+    def on_c_pressed(self):
+        # change cloud value between 0 and 1
+        self.cloud_value = 1 - self.cloud_value
+
 
     def anti_antialiasing(self , is_on):
         if is_on:

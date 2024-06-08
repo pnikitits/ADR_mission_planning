@@ -20,6 +20,8 @@ const float shininess = 128.0;
 
 uniform vec2 shadowMapSize;
 
+uniform float cloudValue;
+
 
 
 float calculateShadow(vec4 fragPosLightSpace) {
@@ -32,7 +34,7 @@ float calculateShadow(vec4 fragPosLightSpace) {
     for(int x = -1; x <= 1; x++) {
         for(int y = -1; y <= 1; y++) {
             float sampleDepth = texture2D(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
-            float shadowIntensity = mix(0.5, 0.01, clamp((currentDepth - sampleDepth) / 0.08, 0.0, 1.0));
+            float shadowIntensity = mix(0.6, 0.001, clamp((currentDepth - sampleDepth) / 0.08, 0.0, 1.0));
             shadow += shadowIntensity;
         }
     }
@@ -44,7 +46,7 @@ void main() {
     vec3 albedo = texture2D(albedoMap, texCoord).rgb;
     vec3 emission = texture2D(emissionMap, texCoord).rgb;
     vec3 specular = texture2D(specularMap, texCoord).rgb;
-    float cloud = texture2D(cloudMap, texCoord).r;
+    float cloud = texture2D(cloudMap, texCoord).r * cloudValue;
 
     // Lighting
     vec3 norm = normalize(normal);
@@ -57,7 +59,7 @@ void main() {
 
     // Diffuse
     float diff = max(dot(norm, lightDir), 1.0);
-    vec3 diffuse = diff * albedo * (1-specular*0.5);
+    vec3 diffuse = diff * albedo;
 
     // Specular
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);

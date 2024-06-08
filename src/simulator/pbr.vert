@@ -22,3 +22,26 @@ void main() {
     fragPosLightSpace = lightSpaceMatrix * p3d_ModelMatrix * p3d_Vertex;
     gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
 }
+
+// uniform sampler2D topographyMap; // Add topographic texture sampler
+
+// void main() {
+//     // Get texture coordinates
+//     texCoord = p3d_MultiTexCoord0;
+
+//     // Sample topographic texture
+//     float topographicValue = texture2D(topographyMap, texCoord).r;
+
+//     // Displace vertex position based on topographic value
+//     vec3 displacedPos = p3d_Vertex.xyz + p3d_Normal * topographicValue * 0.05;
+
+//     // Transform the displaced position to view space
+//     fragPos = vec3(p3d_ModelMatrix * vec4(displacedPos, 1.0));
+//     normal = normalize(p3d_NormalMatrix * p3d_Normal);
+
+//     // Calculate fragment position in light space for shadow mapping
+//     fragPosLightSpace = lightSpaceMatrix * p3d_ModelMatrix * vec4(displacedPos, 1.0);
+
+//     // Calculate final vertex position
+//     gl_Position = p3d_ModelViewProjectionMatrix * vec4(displacedPos, 1.0);
+// }

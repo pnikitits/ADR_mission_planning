@@ -10,7 +10,7 @@ from panda3d.core import Point3 , MouseButton , PointLight , Mat4 , AmbientLight
 from panda3d.core import Vec3 , KeyboardButton , TextureStage , TransparencyAttrib
 from panda3d.core import LightAttrib , NodePath , CardMaker , NodePath , TextNode
 from panda3d.core import AntialiasAttrib, loadPrcFileData , Point2 , Shader , LMatrix4f
-
+from panda3d.core import Texture , GraphicsPipe , FrameBufferProperties , GraphicsOutput
 
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
@@ -51,13 +51,15 @@ class MyApp(ShowBase):
         self.current_target = row_0['target_index']
         self.already_deorbited = []
 
+        self.quad = None
+
         self.setup_scene()
         self.taskMgr.add(self.check_keys, "check_keys_task")
         self.accept("space" , self.on_space_pressed)
         self.game_is_paused = False
         self.accept("a" , self.on_a_pressed)
-
         self.accept('c' , self.on_c_pressed)
+        self.accept('d' , self.on_d_pressed)
 
         self.accept("escape", self.toggle_fullscreen)
         self.accept("x" , self.userExit)
@@ -66,7 +68,7 @@ class MyApp(ShowBase):
         
         
         
-        self.taskMgr.doMethodLater(1/60, self.renderer, 'renderer')
+        self.taskMgr.doMethodLater(1/30, self.renderer, 'renderer')
 
 
 
@@ -86,17 +88,61 @@ class MyApp(ShowBase):
 
     def setup_scene(self):
         
-        setup_skybox(self.render , self.loader)
+        self.skybox = setup_skybox(self.render , self.loader)
         self.setup_camera()
         
         self.setup_nodes()
         self.setup_lights()
         self.setup_hud()
 
+        self.setup_offscreen_buffer()
+        self.load_shaders()
+
+
+
+    def setup_offscreen_buffer(self):
+        # Create an offscreen buffer
+        winprops = WindowProperties.size(self.win.getXSize(), self.win.getYSize())
+        fbprops = FrameBufferProperties()
+        fbprops.setRgbColor(True)
+        fbprops.setDepthBits(1)
+        
+        self.buffer = self.graphicsEngine.makeOutput(
+            self.pipe, "offscreen buffer", -2,
+            fbprops, winprops,
+            GraphicsPipe.BFRefuseWindow,
+            self.win.getGsg(), self.win
+        )
+        
+        # Create a texture to render the scene into
+        self.texture = Texture()
+        self.buffer.addRenderTexture(self.texture, GraphicsOutput.RTMCopyRam, GraphicsOutput.RTPColor)
+        
+        # Set self.camera to render to the offscreen buffer
+        self.cam.node().setActive(False)  # Deactivate the main window camera
+        self.buffer_cam = self.makeCamera(self.buffer, lens=self.camLens)
+        self.buffer_cam.reparentTo(self.camera)
+        
+    def load_shaders(self):
+        # Load the shader
+        self.shader = Shader.load(Shader.SL_GLSL, "src/simulator/shaders/post_process.vert", "src/simulator/shaders/post_process.frag")
+        
+        # Create a fullscreen quad to apply the shader
+        cm = CardMaker("fullscreen_quad")
+        cm.setFrameFullscreenQuad()
+        self.quad = self.render2d.attachNewNode(cm.generate())
+        self.quad.setTexture(self.texture)
+        self.quad.setShader(self.shader)
+        self.quad.setShaderInput("tex", self.texture)
+        self.quad.setShaderInput("texel_size", (1.0 / self.win.getXSize(), 1.0 / self.win.getYSize()))
+        self.quad.setShaderInput("diagramValue", self.diagram_value)
+
+
 
     def renderer(self, task):
 
         self.update_hud()
+        self.update_shader_inputs()
 
         if not self.game_is_paused:
             # self.otv.update(dt=DT)
@@ -110,7 +156,7 @@ class MyApp(ShowBase):
 
     def env_visual_update(self):
         
-        self.update_shader_inputs()
+        
 
         # Frames updates
         current_row = self.data.loc[self.current_frame]
@@ -177,9 +223,9 @@ class MyApp(ShowBase):
         self.fuel_label.setText(f"Fuel: {round(current_fuel/10,1)}%")
 
         if self.current_target != current_row['target_index']:
-            print('switching target')
-            print(self.current_target)
-            print(current_row['target_index'])
+            # print('switching target')
+            # print(self.current_target)
+            # print(current_row['target_index'])
 
             # self.debris_nodes[self.current_target+1].hide()
 
@@ -245,6 +291,8 @@ class MyApp(ShowBase):
         self.earth.setHpr(0, 90, 0)
 
         self.cloud_value = 1
+        self.skybox_value = 1
+        self.diagram_value = 0
 
 
         albedo_tex = self.loader.loadTexture("src/Assets/Textures/earth_bm3.png")
@@ -293,7 +341,11 @@ class MyApp(ShowBase):
         view_pos = self.camera.getPos(self.render)
         self.earth.setShaderInput("viewPos", view_pos)
         self.earth.setShaderInput("cloudValue", self.cloud_value)
-        
+
+        if self.quad is not None:
+            self.quad.setShaderInput("diagramValue", self.diagram_value)
+        else:
+            print('quad is none')
 
 
 
@@ -311,13 +363,13 @@ class MyApp(ShowBase):
         self.shadowTexture = self.shadowBuffer.getTexture()
         
         self.depthmap = NodePath("depthmap")
-        self.depthmap.setShader(Shader.load(Shader.SL_GLSL, "src/simulator/shadow_v.glsl", "src/simulator/shadow_f.glsl"))
+        self.depthmap.setShader(Shader.load(Shader.SL_GLSL, "src/simulator/shaders/shadow_v.glsl", "src/simulator/shaders/shadow_f.glsl"))
         
         self.earth.setShaderInput("shadowMap", self.shadowTexture)
         self.earth.setShaderInput("lightSpaceMatrix", self.depthmap.getMat())
         self.earth.setShaderInput("lightPos", self.light_np.getPos())
 
-        self.earth.setShader(Shader.load(Shader.SL_GLSL, vertex="src/simulator/pbr.vert", fragment="src/simulator/pbr.frag"))
+        self.earth.setShader(Shader.load(Shader.SL_GLSL, vertex="src/simulator/shaders/pbr.vert", fragment="src/simulator/shaders/pbr.frag"))
 
         
         
@@ -335,8 +387,8 @@ class MyApp(ShowBase):
         self.min_dist = 3
         self.max_dist = 16
 
-        self.angle_around_origin = 0.0
-        self.elevation_angle = 0.0
+        self.angle_around_origin = 59.40309464931488
+        self.elevation_angle = 4.781174659729004
 
         # self.light_angle_around_origin = 0.0
         # self.light_elevation_angle = 0.0
@@ -344,7 +396,7 @@ class MyApp(ShowBase):
         self.last_mouse_x = 0
         self.last_mouse_y = 0
         
-        self.camera.setPos(0, -10, 0)
+        self.camera.setPos(8.57774, -5.07224, 0.833504)
         self.camera.lookAt(0, 0, 0)
 
         self.camLens.setNear(0.1)
@@ -434,9 +486,11 @@ class MyApp(ShowBase):
         ctrl_y = -0.9
         ctrl_scale = 0.04
         # controls_label_1 = self.add_text_label(text="A: Toggle Plane Visualisation" , pos=(ctrl_x , ctrl_y+y_sp*6) , scale=0.05 , alignment_mode=TextNode.ALeft)
-        # controls_label_2 = self.add_text_label(text="Z: Show/Hide Plane 4" , pos=(ctrl_x , ctrl_y+y_sp*5) , scale=0.05 , alignment_mode=TextNode.ALeft)
-        controls_label_3 = self.add_text_label(text="Space: Pause/Resume" , pos=(ctrl_x , ctrl_y+y_sp*4) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
-        controls_label_4 = self.add_text_label(text="C: Toggle Clouds" , pos=(ctrl_x , ctrl_y+y_sp*3) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
+        
+        controls_label_1 = self.add_text_label(text="D: Toggle diagram" , pos=(ctrl_x , ctrl_y+y_sp*6) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
+        controls_label_2 = self.add_text_label(text="Space: Pause/Resume" , pos=(ctrl_x , ctrl_y+y_sp*5) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
+        controls_label_3 = self.add_text_label(text="C: Toggle Clouds" , pos=(ctrl_x , ctrl_y+y_sp*4) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
+        controls_label_4 = self.add_text_label(text="Left/Right: Rotate Camera" , pos=(ctrl_x , ctrl_y+y_sp*3) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
         controls_label_5 = self.add_text_label(text="Up/Down: Zoom In/Out" , pos=(ctrl_x , ctrl_y+y_sp*2) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
         controls_label_6 = self.add_text_label(text="Esc: Toggle Fullscreen" , pos=(ctrl_x , ctrl_y+y_sp) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
         controls_label_7 = self.add_text_label(text="X: Exit" , pos=(ctrl_x , ctrl_y) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
@@ -512,6 +566,7 @@ class MyApp(ShowBase):
 
     def update_camera_position(self):
         # print(f'\r{self.angle_around_origin} , {self.elevation_angle}' , end='')
+        # print(f'\r{self.camera.getPos()} , {self.angle_around_origin} , {self.elevation_angle}' , end='')
 
         # Camera
         if self.angle_around_origin > 360:
@@ -554,6 +609,12 @@ class MyApp(ShowBase):
             self.move_forward()
         if self.mouseWatcherNode.is_button_down(KeyboardButton.down()):
             self.move_backward()
+        if self.mouseWatcherNode.is_button_down(KeyboardButton.left()):
+            self.angle_around_origin -= 1
+            self.update_camera_position()
+        if self.mouseWatcherNode.is_button_down(KeyboardButton.right()):
+            self.angle_around_origin += 1
+            self.update_camera_position()
         
         return task.cont
 
@@ -620,6 +681,22 @@ class MyApp(ShowBase):
             self.visualisation_plane_4.show()
         else:
             self.visualisation_plane_4.hide()
+
+    def on_d_pressed(self):
+        self.diagram_value = 1 - self.diagram_value
+        self.toggle_skybox()
+
+
+    def toggle_skybox(self):
+        self.skybox_value = 1 - self.skybox_value
+        
+        if self.skybox_value == 1:
+            for plane in self.skybox:
+                plane.show()
+        else:
+            for plane in self.skybox:
+                plane.hide()
+        
 
     def on_space_pressed(self):
         self.game_is_paused = not self.game_is_paused

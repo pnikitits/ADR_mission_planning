@@ -1,16 +1,12 @@
 from astropy import units as u
-
 from poliastro.bodies import Earth
-from poliastro.twobody import Orbit
+from src.simulator.CustomOrbit import Orbit
 from poliastro.plotting import OrbitPlotter3D
-
 import src.simulator.CustomManeuvres as CustomManeuvres
-
 import copy
 import numpy as np
-
 import scipy.io
-
+import pandas as pd
 
 class Debris:
     def __init__(self , poliastro_orbit , norad_id):
@@ -20,10 +16,10 @@ class Debris:
 
 
 class Simulator:
-    def __init__(self , starting_index=1 , n_debris=10):
+    def __init__(self , starting_index=1 , n_debris=10, starting_fuel=1000):
         # Initialise the debris dictionary and assign the otv to an Orbit
-        # self.debris_list = self.init_random_debris(n=n_debris) 
-        self.debris_list = self.debris_from_dataset(n=n_debris) #le dataset contient 320 debris
+        self.debris_list = self.init_random_debris(n=n_debris) 
+        # self.debris_list = self.debris_from_dataset(n=n_debris) #le dataset contient 320 debris
         check_debris = False
         if check_debris:
             for idx, target_debris in enumerate(self.debris_list):
@@ -35,6 +31,7 @@ class Simulator:
     
 
         self.otv_orbit = copy.copy(self.debris_list[starting_index].poliastro_orbit)
+        self.current_fuel = starting_fuel
         
 
     def simulate_action(self , action):
@@ -52,7 +49,7 @@ class Simulator:
         return DV_required , DT_required
 
 
-    def strategy_1(self , action):
+    def strategy_1(self , action, render=False, step_sec=5):
         """
         Strategy 1 defined in transfer strategies slides
         1. Inc
@@ -60,17 +57,9 @@ class Simulator:
         3. Hohmann
         """
 
-        # Force the eccentricity to 0
-        # self.otv_orbit.ecc = 0 * u.one
 
         # Set the target from the action
         target_debris = self.debris_list[action[0]].poliastro_orbit
-
-        # DEBUG: print the otv and target elements
-        # print('OTV Elements before')
-        # print(self.otv_orbit.a, self.otv_orbit.ecc, self.otv_orbit.inc, self.otv_orbit.raan, self.otv_orbit.argp, self.otv_orbit.nu)
-        # print('Target Elements before')
-        # print(target_debris.a, target_debris.ecc, target_debris.inc, target_debris.raan, target_debris.argp, target_debris.nu)
 
         # ---- Inclination change
         inc_change = CustomManeuvres.simple_inc_change(self.otv_orbit, target_debris)
@@ -78,14 +67,16 @@ class Simulator:
         # Get the transfer time of the hoh_phas
         transfer_time = inc_change.get_total_time()
 
+        # Apply the maneuver to the otv
+        self.otv_orbit, inc_frames = self.otv_orbit.apply_maneuver_custom(inc_change, copy.deepcopy(self.debris_list) if render else None, step_sec=step_sec, render=render)
+        # Append the current fuel to the frames df
+        inc_frames['fuel'] = self.current_fuel if render else None
+        self.current_fuel -= inc_change.get_total_cost().value
+
         # Propagate all debris to the end of the transfer
         for i , debris in enumerate(self.debris_list):
             self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)
         
-        # Apply the maneuver to the otv
-        self.otv_orbit = self.otv_orbit.apply_maneuver(inc_change)
-        
-
 
         # ---- Raan change
         target_debris = self.debris_list[action[0]].poliastro_orbit
@@ -94,12 +85,15 @@ class Simulator:
         # Get the transfer time of the hoh_phas
         transfer_time = raan_change.get_total_time()
 
+        # Apply the maneuver to the otv
+        self.otv_orbit, raan_frames = self.otv_orbit.apply_maneuver_custom(raan_change, copy.deepcopy(self.debris_list) if render else None, step_sec=step_sec, render=render)
+        # Append the current fuel to the frames df
+        raan_frames['fuel'] = self.current_fuel if render else None
+        self.current_fuel -= inc_change.get_total_cost().value
+
         # Propagate all debris to the end of the transfer
         for i , debris in enumerate(self.debris_list):
             self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)
-        
-        # Apply the maneuver to the otv
-        self.otv_orbit = self.otv_orbit.apply_maneuver(raan_change)
         
 
         # ---- Hohmann
@@ -109,13 +103,15 @@ class Simulator:
         # Get the transfer time of the hoh_phas
         transfer_time = hoh_change.get_total_time()
 
+        # Apply the maneuver to the otv
+        self.otv_orbit, hoh_frames = self.otv_orbit.apply_maneuver_custom(hoh_change, copy.deepcopy(self.debris_list) if render else None, step_sec=step_sec, render=render)
+        # Append the current fuel to the frames df
+        hoh_frames['fuel'] = self.current_fuel if render else None
+        self.current_fuel -= inc_change.get_total_cost().value
+
         # Propagate all debris to the end of the transfer
         for i , debris in enumerate(self.debris_list):
-            self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)
-        
-        # Apply the maneuver to the otv
-        self.otv_orbit = self.otv_orbit.apply_maneuver(hoh_change)
-        
+            self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(transfer_time)      
 
         # Total resources used
         total_dv = hoh_change.get_total_cost() + raan_change.get_total_cost() + inc_change.get_total_cost()
@@ -130,7 +126,14 @@ class Simulator:
         #     for i , debris in enumerate(self.debris_list):
         #         self.debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(extra_time)
 
-        return total_dv , min_time
+        if render:
+            # Concat the dataframes
+            location_frames_df = pd.concat([inc_frames , raan_frames , hoh_frames] , axis=0)
+            # Add a column for the action
+            location_frames_df['target_index'] = action[0]
+            return location_frames_df
+        else:
+            return total_dv , min_time
 
 
 
@@ -147,11 +150,11 @@ class Simulator:
 
         for norad_id in range(n):
             min_a = 6371 + 200
-            max_a = 6371 + 2000
+            max_a = 6371 + 10000
             a = np.random.uniform(min_a, max_a) * u.km
             ecc = 0 * u.one
-            inc = np.random.uniform(0, 10) * u.deg
-            raan = np.random.uniform(0, 10) * u.deg
+            inc = np.random.uniform(0, 45) * u.deg
+            raan = np.random.uniform(0, 45) * u.deg
             argp = 0 * u.deg
             nu = np.random.uniform(-180, 180) * u.deg
 

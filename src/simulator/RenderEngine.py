@@ -52,6 +52,7 @@ class MyApp(ShowBase):
         self.already_deorbited = []
 
         self.quad = None
+        self.sun = None
 
         self.setup_scene()
         self.taskMgr.add(self.check_keys, "check_keys_task")
@@ -61,6 +62,7 @@ class MyApp(ShowBase):
         self.accept('c' , self.on_c_pressed) # toggle clouds
         self.accept('d' , self.on_d_pressed) # toggle diagram
         self.accept('f' , self.on_f_pressed) # toggle full circle trajectory
+        self.accept('h' , self.on_h_pressed) # toggle hud
 
         self.accept("escape", self.toggle_fullscreen)
         self.accept("x" , self.userExit)
@@ -267,6 +269,7 @@ class MyApp(ShowBase):
 
     def setup_nodes(self):
         self.make_earth()
+        self.make_sun()
 
         self.otv_node = self.make_sphere(size=0.005 , otv=True)
         self.otv_node.reparentTo(self.render)
@@ -319,7 +322,28 @@ class MyApp(ShowBase):
 
         self.line_manager.update_line(name_in_line_manager , all_points , color=color , thickness=thickness)
 
+    def make_sun(self):
+        self.sun = self.make_sphere(size=0.5)
+        self.sun.reparentTo(self.render)
+        self.sun.setPos(0, -20, 0)
 
+        
+        self.sun.setShader(Shader.load(Shader.SL_GLSL, vertex="src/simulator/shaders/sun.vert", fragment="src/simulator/shaders/sun.frag"))
+        
+
+        self.update_sun()
+
+    def update_sun(self):
+        # Retrieve the current model, view, and projection matrices
+        model_matrix = self.sun.getMat()
+        view_matrix = self.camera.getMat(self.render)
+        view_matrix.invert_in_place()
+        projection_matrix = self.camLens.getProjectionMat()
+
+        # Set the shader inputs
+        self.sun.setShaderInput("model", model_matrix)
+        self.sun.setShaderInput("view", view_matrix)
+        self.sun.setShaderInput("projection", projection_matrix)
         
     def make_earth(self):
         self.earth = self.make_sphere(size=0.7)
@@ -333,6 +357,7 @@ class MyApp(ShowBase):
         self.diagram_value = 0
         self.full_trajectory_value = 0
         self.full_traj_is_computed = 0
+        self.hud_value = 1
         
 
 
@@ -379,6 +404,10 @@ class MyApp(ShowBase):
         view_pos = self.camera.getPos(self.render)
         self.earth.setShaderInput("viewPos", view_pos)
         self.earth.setShaderInput("cloudValue", self.cloud_value)
+        self.earth.setShaderInput("diagramValue", self.diagram_value)
+
+        if self.sun is not None:
+            self.update_sun()
 
         if self.quad is not None:
             self.quad.setShaderInput("diagramValue", self.diagram_value)
@@ -416,6 +445,7 @@ class MyApp(ShowBase):
         self.earth.setShaderInput("shadowMap", self.shadowTexture)
         self.earth.setShaderInput("lightSpaceMatrix", self.depthmap.getMat())
         self.earth.setShaderInput("lightPos", self.light_np.getPos())
+        self.earth.setShaderInput("diagramValue", self.diagram_value)
 
         self.earth.setShader(Shader.load(Shader.SL_GLSL, vertex="src/simulator/shaders/pbr.vert", fragment="src/simulator/shaders/pbr.frag"))
 
@@ -508,24 +538,29 @@ class MyApp(ShowBase):
 
 
     def setup_hud(self):
+        self.all_labels = []
+
         y_st = 0.9
-        y_sp = 0.1
+        y_sp = 0.07
         x_po = -1.5
         self.label_1 = self.add_text_label(text="label 1" , pos=(x_po , y_st))
+        self.all_labels.append(self.label_1)
 
         self.pause_label = self.add_text_label(text="II" , pos=(0 , y_st))
         self.pause_label.hide()
 
         self.fuel_label = self.add_text_label(text="Fuel: #" , pos=(x_po , y_st - y_sp))
         self.target_label = self.add_text_label(text="Target: #" , pos=(x_po , y_st - 2*y_sp))
-        # self.removed_label = self.add_text_label(text="Removed: []" , pos=(x_po , y_st - 3*y_sp))
+        self.all_labels.append(self.fuel_label)
+        self.all_labels.append(self.target_label)
 
         self.otv_label = self.add_text_label(text="OTV" , pos=(0,0) , scale=0.05)
+        self.all_labels.append(self.otv_label)
 
         self.debris_labels = []
         for i in range(1 , self.n_debris):
             self.debris_labels.append(self.add_text_label(text=f"Debris {i}" , pos=(0,0) , scale=0.05))
-
+            self.all_labels.append(self.debris_labels[i-1])
         
         # self.circle_img = self.add_image("src/Assets/Textures/circle.png" , pos=(0 , 0) , scale=0.1)
 
@@ -533,7 +568,8 @@ class MyApp(ShowBase):
         ctrl_y = -0.9
         ctrl_scale = 0.04
 
-
+        controls_label_9 = self.add_text_label(text="F: Toggle Full Trajectory" , pos=(ctrl_x , ctrl_y+y_sp*9) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
+        controls_label_8 = self.add_text_label(text="H: Toggle HUD" , pos=(ctrl_x , ctrl_y+y_sp*8) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
         controls_label_0 = self.add_text_label(text="A: Toggle Atmosphere" , pos=(ctrl_x , ctrl_y+y_sp*7) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
         controls_label_1 = self.add_text_label(text="D: Toggle diagram" , pos=(ctrl_x , ctrl_y+y_sp*6) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
         controls_label_2 = self.add_text_label(text="Space: Pause/Resume" , pos=(ctrl_x , ctrl_y+y_sp*5) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
@@ -543,6 +579,16 @@ class MyApp(ShowBase):
         controls_label_6 = self.add_text_label(text="Esc: Toggle Fullscreen" , pos=(ctrl_x , ctrl_y+y_sp) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
         controls_label_7 = self.add_text_label(text="X: Exit" , pos=(ctrl_x , ctrl_y) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
 
+        self.all_labels.append(controls_label_0)
+        self.all_labels.append(controls_label_1)
+        self.all_labels.append(controls_label_2)
+        self.all_labels.append(controls_label_3)
+        self.all_labels.append(controls_label_4)
+        self.all_labels.append(controls_label_5)
+        self.all_labels.append(controls_label_6)
+        self.all_labels.append(controls_label_7)
+        self.all_labels.append(controls_label_8)
+        self.all_labels.append(controls_label_9)
 
 
 
@@ -708,14 +754,24 @@ class MyApp(ShowBase):
         if self.atmosphere_value == 1:
             self.diagram_value = 0
             self.show_skybox()
-            
+
+
+    def on_h_pressed(self):
+        self.hud_value = 1 - self.hud_value
+
+        if self.hud_value == 1:
+            for label in self.all_labels:
+                label.show()
+        else:
+            for label in self.all_labels:
+                label.hide()   
 
 
     def on_d_pressed(self):
         self.diagram_value = 1 - self.diagram_value
-        if self.diagram_value == 1:
-            self.atmosphere_value = 0
-            self.cloud_value = 0
+        # if self.diagram_value == 1:
+        #     self.atmosphere_value = 0
+        #     self.cloud_value = 0
         self.toggle_skybox()
 
 

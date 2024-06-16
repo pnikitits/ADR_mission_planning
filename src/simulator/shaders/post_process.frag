@@ -133,7 +133,7 @@ void main() {
 
 
 
-    } else if (diagramValue == 1.0 && atmosphereValue == 0.0) {
+    } else if (diagramValue == 1.0) {
         // Draw the outline (for diagram use)
         float edge_threshold = 0.1;
 

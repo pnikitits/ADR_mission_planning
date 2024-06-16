@@ -34,7 +34,7 @@ class LineManager:
 
     def update_line(self, name, points, color=(1, 0, 0, 1), thickness=2.0):
         if name not in self.lines:
-            print(f"No line with name '{name}' found. Creating a new one.")
+            # print(f"No line with name '{name}' found. Creating a new one.")
             self.make_line(name, points, color, thickness)
             return
         

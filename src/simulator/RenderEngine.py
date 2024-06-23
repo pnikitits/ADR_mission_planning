@@ -6,10 +6,10 @@ from src.Extras.HelperFunctions import *
 from src.Extras.Skybox import *
 from src.Extras.Circle import *
 
-from panda3d.core import Point3 , MouseButton , PointLight , Mat4 , AmbientLight
+from panda3d.core import Point3 , MouseButton , PointLight , Mat4
 from panda3d.core import Vec3 , KeyboardButton , TextureStage , TransparencyAttrib
 from panda3d.core import LightAttrib , NodePath , CardMaker , NodePath , TextNode
-from panda3d.core import AntialiasAttrib, loadPrcFileData , Point2 , Shader , LMatrix4f
+from panda3d.core import AntialiasAttrib, loadPrcFileData , Point2 , Shader
 from panda3d.core import Texture , GraphicsPipe , FrameBufferProperties , GraphicsOutput
 
 from direct.showbase.ShowBase import ShowBase
@@ -53,6 +53,7 @@ class MyApp(ShowBase):
 
         self.quad = None
         self.sun = None
+        self.otv_node = None
 
         self.setup_scene()
         self.taskMgr.add(self.check_keys, "check_keys_task")
@@ -66,7 +67,7 @@ class MyApp(ShowBase):
 
         self.accept("escape", self.toggle_fullscreen)
         self.accept("x" , self.userExit)
-        
+
         self.fullscreen = True
         # self.toggle_fullscreen() # initially go out of fullscreen
         
@@ -177,8 +178,6 @@ class MyApp(ShowBase):
         self.update_shader_inputs()
 
         if not self.game_is_paused:
-            # self.otv.update(dt=DT)
-            # self.target.update(dt=DT)
             rotate_object(self.earth , [0.025 , 0 , 0])
             self.env_visual_update()
         
@@ -252,50 +251,30 @@ class MyApp(ShowBase):
         self.fuel_label.setText(f"Fuel: {round(current_fuel/10,1)}%")
 
         if self.current_target != current_row['target_index']:
-            # print('switching target')
-            # print(self.current_target)
-            # print(current_row['target_index'])
-
-            # self.debris_nodes[self.current_target+1].hide()
-
             if self.current_target not in self.already_deorbited:
                 self.already_deorbited.append(self.current_target)
                 
 
         self.current_target = current_row['target_index']
         self.target_label.setText(f"Target: {self.current_target+1}")
-            
         
 
+    
     def setup_nodes(self):
         self.make_earth()
         self.make_sun()
+        self.make_otv()
 
-        self.otv_node = self.make_sphere(size=0.005 , otv=True)
-        self.otv_node.reparentTo(self.render)
 
         self.debris_nodes = []
         for _ in range(self.n_debris):
-            node = self.make_sphere(size=0.005 , sat=True)
-            node.reparentTo(self.render)
+            node = self.make_sat()
             self.debris_nodes.append(node)
-
-
 
         self.line_manager = LineManager(self.render)
         
-
         self.setup_planes_visualisation()
 
-
-    def make_object(self , elements):
-        init_pos = [1,1,1]
-        node = self.make_sphere(size=0.03 , low_poly=True)
-        node.setPos(init_pos[0] , init_pos[1] , init_pos[2])
-        node.reparentTo(self.render)
-
-        
-        return node
     
 
     def update_trail(self , name_in_df , name_in_line_manager , n_points=100 , color=(0,1,1,1) , thickness=0.5):
@@ -321,6 +300,41 @@ class MyApp(ShowBase):
             all_points.append(pos)
 
         self.line_manager.update_line(name_in_line_manager , all_points , color=color , thickness=thickness)
+
+
+    def make_otv(self):
+        self.otv_node = self.loader.loadModel("src/Assets/Models/otv.dae")
+        albedo_tex = self.loader.loadTexture("src/Assets/Textures/otv_albedo.png")
+        emission_tex = self.loader.loadTexture("src/Assets/Textures/otv_emission.png")
+        self.otv_node.reparentTo(self.render)
+        
+        ts_albedo = TextureStage('albedo')
+        self.otv_node.setTexture(ts_albedo, albedo_tex)
+
+        ts_emission = TextureStage('emission')
+        self.otv_node.setTexture(ts_emission, emission_tex)
+
+        self.otv_node.setShaderInput("albedoMap", albedo_tex)
+        self.otv_node.setShaderInput("emissionMap", emission_tex)
+        self.otv_node.setShader(Shader.load(Shader.SL_GLSL, vertex="src/simulator/shaders/otv.vert", fragment="src/simulator/shaders/otv.frag"))
+        self.otv_node.setScale(0.005)
+
+
+    def make_sat(self):
+        node = self.loader.loadModel("src/Assets/Models/sat.dae")
+        node.reparentTo(self.render)
+
+        albedo_tex = self.loader.loadTexture("src/Assets/Textures/sat_texture.png")
+        ts_albedo = TextureStage('albedo')
+        node.setTexture(ts_albedo, albedo_tex)
+
+        node.setShaderInput("albedoMap", albedo_tex)
+        node.setShader(Shader.load(Shader.SL_GLSL, vertex="src/simulator/shaders/otv.vert", fragment="src/simulator/shaders/sat.frag"))
+        node.setScale(0.005)
+
+        return node
+
+
 
     def make_sun(self):
         self.sun = self.make_sphere(size=0.5)
@@ -451,11 +465,6 @@ class MyApp(ShowBase):
 
         
         
-        
-        
-        
-        
-
     def setup_camera(self):
         self.disableMouse() # Enable mouse control for the camera
 
@@ -604,8 +613,18 @@ class MyApp(ShowBase):
 
         for i in range(1 , self.n_debris):
             debris_screen_pos = self.get_object_screen_pos(self.debris_nodes[i])
+
             if debris_screen_pos is not None:
                 self.debris_labels[i-1].setPos(debris_screen_pos[0] + 0.05 , debris_screen_pos[1])
+                self.debris_labels[i-1].show()
+            else:
+                self.debris_labels[i-1].hide()
+
+
+            if i == self.current_target+1:
+                self.debris_labels[i-1].setText(f"Debris {i} (Target)")
+            else:
+                self.debris_labels[i-1].setText(f"Debris {i}")
                 
 
 
@@ -724,7 +743,7 @@ class MyApp(ShowBase):
                                     pos=pos, # Position on the screen
                                     scale=scale, # Text scale
                                     fg=(1, 1, 1, 1), # Text color (R, G, B, A)
-                                    bg=(0, 0, 0, 0.5), # Background color (R, G, B, A)
+                                    bg=(0, 0, 0, 0), # Background color (R, G, B, A)
                                     align=alignment_mode, # Text alignment
                                     font=custom_font,
                                     mayChange=True) # Allow text to change dynamically

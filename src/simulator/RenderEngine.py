@@ -43,7 +43,7 @@ class MyApp(ShowBase):
         self.current_frame = 0
 
         self.n_frames = len(self.data)
-        print(self.n_frames)
+        # print(self.n_frames)
 
         row_0 = self.data.loc[self.current_frame]
         self.n_debris = len(row_0) - 3
@@ -311,12 +311,12 @@ class MyApp(ShowBase):
         ts_albedo = TextureStage('albedo')
         self.otv_node.setTexture(ts_albedo, albedo_tex)
 
-        ts_emission = TextureStage('emission')
-        self.otv_node.setTexture(ts_emission, emission_tex)
+        # ts_emission = TextureStage('emission')
+        # self.otv_node.setTexture(ts_emission, emission_tex)
 
-        self.otv_node.setShaderInput("albedoMap", albedo_tex)
-        self.otv_node.setShaderInput("emissionMap", emission_tex)
-        self.otv_node.setShader(Shader.load(Shader.SL_GLSL, vertex="src/simulator/shaders/otv.vert", fragment="src/simulator/shaders/otv.frag"))
+        # self.otv_node.setShaderInput("albedoMap", albedo_tex)
+        # self.otv_node.setShaderInput("emissionMap", emission_tex)
+        # self.otv_node.setShader(Shader.load(Shader.SL_GLSL, vertex="src/simulator/shaders/otv.vert", fragment="src/simulator/shaders/otv.frag"))
         self.otv_node.setScale(0.005)
 
 
@@ -328,8 +328,8 @@ class MyApp(ShowBase):
         ts_albedo = TextureStage('albedo')
         node.setTexture(ts_albedo, albedo_tex)
 
-        node.setShaderInput("albedoMap", albedo_tex)
-        node.setShader(Shader.load(Shader.SL_GLSL, vertex="src/simulator/shaders/otv.vert", fragment="src/simulator/shaders/sat.frag"))
+        # node.setShaderInput("albedoMap", albedo_tex)
+        # node.setShader(Shader.load(Shader.SL_GLSL, vertex="src/simulator/shaders/otv.vert", fragment="src/simulator/shaders/sat.frag"))
         node.setScale(0.005)
 
         return node
@@ -569,7 +569,8 @@ class MyApp(ShowBase):
         self.debris_labels = []
         for i in range(1 , self.n_debris):
             self.debris_labels.append(self.add_text_label(text=f"Debris {i}" , pos=(0,0) , scale=0.05))
-            self.all_labels.append(self.debris_labels[i-1])
+            
+        self.all_labels += self.debris_labels # add all debris labels to all labels
         
         # self.circle_img = self.add_image("src/Assets/Textures/circle.png" , pos=(0 , 0) , scale=0.1)
 
@@ -611,20 +612,21 @@ class MyApp(ShowBase):
             self.otv_label.setPos(otv_screen_pos[0] + 0.05 , otv_screen_pos[1])
             
 
-        for i in range(1 , self.n_debris):
-            debris_screen_pos = self.get_object_screen_pos(self.debris_nodes[i])
+        if self.hud_value == 1:
+            for i in range(1 , self.n_debris):
+                debris_screen_pos = self.get_object_screen_pos(self.debris_nodes[i])
 
-            if debris_screen_pos is not None:
-                self.debris_labels[i-1].setPos(debris_screen_pos[0] + 0.05 , debris_screen_pos[1])
-                self.debris_labels[i-1].show()
-            else:
-                self.debris_labels[i-1].hide()
+                if debris_screen_pos is not None:
+                    self.debris_labels[i-1].setPos(debris_screen_pos[0] + 0.05 , debris_screen_pos[1])
+                    self.debris_labels[i-1].show()
+                else:
+                    self.debris_labels[i-1].hide()
 
 
-            if i == self.current_target+1:
-                self.debris_labels[i-1].setText(f"Debris {i} (Target)")
-            else:
-                self.debris_labels[i-1].setText(f"Debris {i}")
+                if i == self.current_target+1:
+                    self.debris_labels[i-1].setText(f"Debris {i} (Target)")
+                else:
+                    self.debris_labels[i-1].setText(f"Debris {i}")
                 
 
 
@@ -792,6 +794,17 @@ class MyApp(ShowBase):
         #     self.atmosphere_value = 0
         #     self.cloud_value = 0
         self.toggle_skybox()
+
+        
+        if self.diagram_value == 1:
+            for label in self.all_labels:
+                # set text to black
+                label.fg = (0,0,0,1)
+
+        elif self.diagram_value == 0:
+            for label in self.all_labels:
+                # set text to white
+                label.fg = (1,1,1,1)
 
 
     def toggle_skybox(self):

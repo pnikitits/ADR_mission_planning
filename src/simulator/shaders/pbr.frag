@@ -21,6 +21,7 @@ const float shininess = 128.0;
 uniform vec2 shadowMapSize;
 
 uniform float cloudValue;
+uniform float diagramValue;
 
 
 
@@ -73,5 +74,11 @@ void main() {
 
 
     
-    gl_FragColor = vec4(result, 1.0);
+    // gl_FragColor = vec4(result, 1.0);
+
+    if (diagramValue == 1.0) {
+        gl_FragColor = vec4(specular, 1.0);
+    } else {
+        gl_FragColor = vec4(result, 1.0);
+    }
 }

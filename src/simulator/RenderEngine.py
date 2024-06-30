@@ -6,10 +6,10 @@ from src.Extras.HelperFunctions import *
 from src.Extras.Skybox import *
 from src.Extras.Circle import *
 
-from panda3d.core import Point3 , MouseButton , PointLight , Mat4 , AmbientLight
+from panda3d.core import Point3 , MouseButton , PointLight , Mat4
 from panda3d.core import Vec3 , KeyboardButton , TextureStage , TransparencyAttrib
 from panda3d.core import LightAttrib , NodePath , CardMaker , NodePath , TextNode
-from panda3d.core import AntialiasAttrib, loadPrcFileData , Point2 , Shader , LMatrix4f
+from panda3d.core import AntialiasAttrib, loadPrcFileData , Point2 , Shader
 from panda3d.core import Texture , GraphicsPipe , FrameBufferProperties , GraphicsOutput
 
 from direct.showbase.ShowBase import ShowBase
@@ -43,7 +43,7 @@ class MyApp(ShowBase):
         self.current_frame = 0
 
         self.n_frames = len(self.data)
-        print(self.n_frames)
+        # print(self.n_frames)
 
         row_0 = self.data.loc[self.current_frame]
         self.n_debris = len(row_0) - 3
@@ -52,19 +52,24 @@ class MyApp(ShowBase):
         self.already_deorbited = []
 
         self.quad = None
+        self.sun = None
+        self.otv_node = None
 
         self.setup_scene()
         self.taskMgr.add(self.check_keys, "check_keys_task")
         self.accept("space" , self.on_space_pressed)
         self.game_is_paused = False
-        self.accept("a" , self.on_a_pressed)
-        self.accept('c' , self.on_c_pressed)
-        self.accept('d' , self.on_d_pressed)
+        self.accept("a" , self.on_a_pressed) # toggle atmosphere
+        self.accept('c' , self.on_c_pressed) # toggle clouds
+        self.accept('d' , self.on_d_pressed) # toggle diagram
+        self.accept('f' , self.on_f_pressed) # toggle full circle trajectory
+        self.accept('h' , self.on_h_pressed) # toggle hud
 
         self.accept("escape", self.toggle_fullscreen)
         self.accept("x" , self.userExit)
-        
+
         self.fullscreen = True
+        # self.toggle_fullscreen() # initially go out of fullscreen
         
         
         
@@ -114,10 +119,14 @@ class MyApp(ShowBase):
             self.win.getGsg(), self.win
         )
         
-        # Create a texture to render the scene into
-        self.texture = Texture()
-        self.buffer.addRenderTexture(self.texture, GraphicsOutput.RTMCopyRam, GraphicsOutput.RTPColor)
-        
+        # Create color and depth textures to render the scene into
+        self.color_texture = Texture()
+        self.depth_texture = Texture()
+        self.depth_texture.setFormat(Texture.FDepthStencil)
+
+        self.buffer.addRenderTexture(self.color_texture, GraphicsOutput.RTMCopyRam, GraphicsOutput.RTPColor)
+        self.buffer.addRenderTexture(self.depth_texture, GraphicsOutput.RTMCopyRam, GraphicsOutput.RTPDepthStencil)
+
         # Set self.camera to render to the offscreen buffer
         self.cam.node().setActive(False)  # Deactivate the main window camera
         self.buffer_cam = self.makeCamera(self.buffer, lens=self.camLens)
@@ -131,11 +140,35 @@ class MyApp(ShowBase):
         cm = CardMaker("fullscreen_quad")
         cm.setFrameFullscreenQuad()
         self.quad = self.render2d.attachNewNode(cm.generate())
-        self.quad.setTexture(self.texture)
+        self.quad.setTexture(self.color_texture)
         self.quad.setShader(self.shader)
-        self.quad.setShaderInput("tex", self.texture)
+        self.quad.setShaderInput("tex", self.color_texture)
+        self.quad.setShaderInput("depthTex", self.depth_texture)
         self.quad.setShaderInput("texel_size", (1.0 / self.win.getXSize(), 1.0 / self.win.getYSize()))
         self.quad.setShaderInput("diagramValue", self.diagram_value)
+        self.quad.setShaderInput("uCameraPosition" , self.camera.getPos())
+
+
+        # Compute and pass inverse projection and view matrices
+        projection_matrix = Mat4(self.camLens.getProjectionMat())
+        inverse_projection_matrix = Mat4(projection_matrix)
+        inverse_projection_matrix.invertInPlace()
+        self.quad.setShaderInput("uInverseProjectionMatrix", inverse_projection_matrix)
+
+        view_matrix = Mat4(self.buffer_cam.getMat(self.render))
+        self.quad.setShaderInput("uInverseViewMatrix", view_matrix)
+
+        
+
+        wavelengths = [700 , 530 , 440]
+        scatteringStrength = 20.0
+        scatterR = (400/wavelengths[0])**4 * scatteringStrength
+        scatterG = (400/wavelengths[1])**4 * scatteringStrength
+        scatterB = (400/wavelengths[2])**4 * scatteringStrength
+        scatteringCoefficients = (scatterR , scatterG , scatterB)
+        self.quad.setShaderInput("scatteringCoefficients" , scatteringCoefficients)
+
+        self.quad.setShaderInput("atmosphereValue", self.atmosphere_value)
 
 
 
@@ -145,8 +178,6 @@ class MyApp(ShowBase):
         self.update_shader_inputs()
 
         if not self.game_is_paused:
-            # self.otv.update(dt=DT)
-            # self.target.update(dt=DT)
             rotate_object(self.earth , [0.025 , 0 , 0])
             self.env_visual_update()
         
@@ -193,9 +224,6 @@ class MyApp(ShowBase):
 
         # debris
         for i in range(1 , self.n_debris):
-            # debris trail    
-            # if i in self.already_deorbited:
-            #     self.update_trail(f'debris{i}' , f'debris{i}_trail' , color=(1,1,1,1) , thickness=0.5)
             if i == self.current_target+1:
                 self.update_trail(f'debris{i}' , f'debris{i}_trail' , color=(1,0,0,1) , thickness=0.5)
             else:
@@ -223,55 +251,46 @@ class MyApp(ShowBase):
         self.fuel_label.setText(f"Fuel: {round(current_fuel/10,1)}%")
 
         if self.current_target != current_row['target_index']:
-            # print('switching target')
-            # print(self.current_target)
-            # print(current_row['target_index'])
-
-            # self.debris_nodes[self.current_target+1].hide()
-
             if self.current_target not in self.already_deorbited:
                 self.already_deorbited.append(self.current_target)
                 
 
         self.current_target = current_row['target_index']
         self.target_label.setText(f"Target: {self.current_target+1}")
-            
         
 
+    
     def setup_nodes(self):
         self.make_earth()
+        self.make_sun()
+        self.make_otv()
 
-        self.otv_node = self.make_sphere(size=0.005 , otv=True)
-        self.otv_node.reparentTo(self.render)
 
         self.debris_nodes = []
         for _ in range(self.n_debris):
-            node = self.make_sphere(size=0.005 , sat=True)
-            node.reparentTo(self.render)
+            node = self.make_sat()
             self.debris_nodes.append(node)
-
-
 
         self.line_manager = LineManager(self.render)
         
-
         self.setup_planes_visualisation()
 
-
-    def make_object(self , elements):
-        init_pos = [1,1,1]
-        node = self.make_sphere(size=0.03 , low_poly=True)
-        node.setPos(init_pos[0] , init_pos[1] , init_pos[2])
-        node.reparentTo(self.render)
-
-        
-        return node
     
 
     def update_trail(self , name_in_df , name_in_line_manager , n_points=100 , color=(0,1,1,1) , thickness=0.5):
 
+        if self.full_traj_is_computed == 6:
+            return
+        elif self.full_trajectory_value == 1:
+            self.full_traj_is_computed += 1
+
+        
         current_frame = self.current_frame + 1 # last
         frame_minus_n_points = max(0 , self.current_frame - n_points) # first
+
+        if self.full_trajectory_value == 1:
+            frame_minus_n_points = 0
+            current_frame = self.n_frames
 
         all_points = []
         for i in range(frame_minus_n_points , current_frame , 10):
@@ -283,6 +302,62 @@ class MyApp(ShowBase):
         self.line_manager.update_line(name_in_line_manager , all_points , color=color , thickness=thickness)
 
 
+    def make_otv(self):
+        self.otv_node = self.loader.loadModel("src/Assets/Models/otv.dae")
+        albedo_tex = self.loader.loadTexture("src/Assets/Textures/otv_albedo.png")
+        emission_tex = self.loader.loadTexture("src/Assets/Textures/otv_emission.png")
+        self.otv_node.reparentTo(self.render)
+        
+        ts_albedo = TextureStage('albedo')
+        self.otv_node.setTexture(ts_albedo, albedo_tex)
+
+        # ts_emission = TextureStage('emission')
+        # self.otv_node.setTexture(ts_emission, emission_tex)
+
+        # self.otv_node.setShaderInput("albedoMap", albedo_tex)
+        # self.otv_node.setShaderInput("emissionMap", emission_tex)
+        # self.otv_node.setShader(Shader.load(Shader.SL_GLSL, vertex="src/simulator/shaders/otv.vert", fragment="src/simulator/shaders/otv.frag"))
+        self.otv_node.setScale(0.005)
+
+
+    def make_sat(self):
+        node = self.loader.loadModel("src/Assets/Models/sat.dae")
+        node.reparentTo(self.render)
+
+        albedo_tex = self.loader.loadTexture("src/Assets/Textures/sat_texture.png")
+        ts_albedo = TextureStage('albedo')
+        node.setTexture(ts_albedo, albedo_tex)
+
+        # node.setShaderInput("albedoMap", albedo_tex)
+        # node.setShader(Shader.load(Shader.SL_GLSL, vertex="src/simulator/shaders/otv.vert", fragment="src/simulator/shaders/sat.frag"))
+        node.setScale(0.005)
+
+        return node
+
+
+
+    def make_sun(self):
+        self.sun = self.make_sphere(size=0.5)
+        self.sun.reparentTo(self.render)
+        self.sun.setPos(0, -20, 0)
+
+        
+        self.sun.setShader(Shader.load(Shader.SL_GLSL, vertex="src/simulator/shaders/sun.vert", fragment="src/simulator/shaders/sun.frag"))
+        
+
+        self.update_sun()
+
+    def update_sun(self):
+        # Retrieve the current model, view, and projection matrices
+        model_matrix = self.sun.getMat()
+        view_matrix = self.camera.getMat(self.render)
+        view_matrix.invert_in_place()
+        projection_matrix = self.camLens.getProjectionMat()
+
+        # Set the shader inputs
+        self.sun.setShaderInput("model", model_matrix)
+        self.sun.setShaderInput("view", view_matrix)
+        self.sun.setShaderInput("projection", projection_matrix)
         
     def make_earth(self):
         self.earth = self.make_sphere(size=0.7)
@@ -290,9 +365,14 @@ class MyApp(ShowBase):
         self.earth.setPos(0, 0, 0)
         self.earth.setHpr(0, 90, 0)
 
+        self.atmosphere_value = 1
         self.cloud_value = 1
         self.skybox_value = 1
         self.diagram_value = 0
+        self.full_trajectory_value = 0
+        self.full_traj_is_computed = 0
+        self.hud_value = 1
+        
 
 
         albedo_tex = self.loader.loadTexture("src/Assets/Textures/earth_bm3.png")
@@ -316,8 +396,6 @@ class MyApp(ShowBase):
         self.earth.setTexture(ts_topography, topography_tex)
 
         
-        # self.earth.setShaderAuto(False)
-        # self.earth.setShaderOff()
         self.earth.setAttrib(AntialiasAttrib.make(AntialiasAttrib.MAuto))
         self.earth.setRenderModeFilled()
 
@@ -328,7 +406,6 @@ class MyApp(ShowBase):
         self.earth.setShaderInput("cloudMap", cloud_tex)
         self.earth.setShaderInput("topographyMap", topography_tex)
 
-        
         
         self.update_shader_inputs()
 
@@ -341,11 +418,25 @@ class MyApp(ShowBase):
         view_pos = self.camera.getPos(self.render)
         self.earth.setShaderInput("viewPos", view_pos)
         self.earth.setShaderInput("cloudValue", self.cloud_value)
+        self.earth.setShaderInput("diagramValue", self.diagram_value)
+
+        if self.sun is not None:
+            self.update_sun()
 
         if self.quad is not None:
             self.quad.setShaderInput("diagramValue", self.diagram_value)
-        else:
-            print('quad is none')
+            self.quad.setShaderInput("atmosphereValue", self.atmosphere_value)
+            self.quad.setShaderInput("uCameraPosition" , self.camera.getPos())
+
+            # Compute and pass inverse projection and view matrices
+            projection_matrix = Mat4(self.camLens.getProjectionMat())
+            inverse_projection_matrix = Mat4(projection_matrix)
+            inverse_projection_matrix.invertInPlace()
+            self.quad.setShaderInput("uInverseProjectionMatrix", inverse_projection_matrix)
+
+            view_matrix = Mat4(self.buffer_cam.getMat(self.render))
+            self.quad.setShaderInput("uInverseViewMatrix", view_matrix)
+
 
 
 
@@ -368,17 +459,15 @@ class MyApp(ShowBase):
         self.earth.setShaderInput("shadowMap", self.shadowTexture)
         self.earth.setShaderInput("lightSpaceMatrix", self.depthmap.getMat())
         self.earth.setShaderInput("lightPos", self.light_np.getPos())
+        self.earth.setShaderInput("diagramValue", self.diagram_value)
 
         self.earth.setShader(Shader.load(Shader.SL_GLSL, vertex="src/simulator/shaders/pbr.vert", fragment="src/simulator/shaders/pbr.frag"))
 
         
         
-        
-        
-        
-        
-
     def setup_camera(self):
+        self.disableMouse() # Enable mouse control for the camera
+
         self.rotation_speed = 50.0
         self.elevation_speed = -50.0
 
@@ -390,9 +479,6 @@ class MyApp(ShowBase):
         self.angle_around_origin = 59.40309464931488
         self.elevation_angle = 4.781174659729004
 
-        # self.light_angle_around_origin = 0.0
-        # self.light_elevation_angle = 0.0
-
         self.last_mouse_x = 0
         self.last_mouse_y = 0
         
@@ -402,7 +488,7 @@ class MyApp(ShowBase):
         self.camLens.setNear(0.1)
         self.camLens.setFar(100.0)
         
-        self.disableMouse() # Enable mouse control for the camera
+        
         self.accept("mouse1", self.mouse_click)
 
         self.taskMgr.add(self.update_camera_task, "update_camera_task")
@@ -461,32 +547,40 @@ class MyApp(ShowBase):
 
 
     def setup_hud(self):
+        self.all_labels = []
+
         y_st = 0.9
-        y_sp = 0.1
+        y_sp = 0.07
         x_po = -1.5
         self.label_1 = self.add_text_label(text="label 1" , pos=(x_po , y_st))
+        self.all_labels.append(self.label_1)
 
         self.pause_label = self.add_text_label(text="II" , pos=(0 , y_st))
         self.pause_label.hide()
 
         self.fuel_label = self.add_text_label(text="Fuel: #" , pos=(x_po , y_st - y_sp))
         self.target_label = self.add_text_label(text="Target: #" , pos=(x_po , y_st - 2*y_sp))
-        # self.removed_label = self.add_text_label(text="Removed: []" , pos=(x_po , y_st - 3*y_sp))
+        self.all_labels.append(self.fuel_label)
+        self.all_labels.append(self.target_label)
 
         self.otv_label = self.add_text_label(text="OTV" , pos=(0,0) , scale=0.05)
+        self.all_labels.append(self.otv_label)
 
         self.debris_labels = []
         for i in range(1 , self.n_debris):
             self.debris_labels.append(self.add_text_label(text=f"Debris {i}" , pos=(0,0) , scale=0.05))
-
+            
+        self.all_labels += self.debris_labels # add all debris labels to all labels
         
         # self.circle_img = self.add_image("src/Assets/Textures/circle.png" , pos=(0 , 0) , scale=0.1)
 
         ctrl_x = -1.5
         ctrl_y = -0.9
         ctrl_scale = 0.04
-        # controls_label_1 = self.add_text_label(text="A: Toggle Plane Visualisation" , pos=(ctrl_x , ctrl_y+y_sp*6) , scale=0.05 , alignment_mode=TextNode.ALeft)
-        
+
+        controls_label_9 = self.add_text_label(text="F: Toggle Full Trajectory" , pos=(ctrl_x , ctrl_y+y_sp*9) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
+        controls_label_8 = self.add_text_label(text="H: Toggle HUD" , pos=(ctrl_x , ctrl_y+y_sp*8) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
+        controls_label_0 = self.add_text_label(text="A: Toggle Atmosphere" , pos=(ctrl_x , ctrl_y+y_sp*7) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
         controls_label_1 = self.add_text_label(text="D: Toggle diagram" , pos=(ctrl_x , ctrl_y+y_sp*6) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
         controls_label_2 = self.add_text_label(text="Space: Pause/Resume" , pos=(ctrl_x , ctrl_y+y_sp*5) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
         controls_label_3 = self.add_text_label(text="C: Toggle Clouds" , pos=(ctrl_x , ctrl_y+y_sp*4) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
@@ -495,6 +589,16 @@ class MyApp(ShowBase):
         controls_label_6 = self.add_text_label(text="Esc: Toggle Fullscreen" , pos=(ctrl_x , ctrl_y+y_sp) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
         controls_label_7 = self.add_text_label(text="X: Exit" , pos=(ctrl_x , ctrl_y) , scale=ctrl_scale , alignment_mode=TextNode.ALeft)
 
+        self.all_labels.append(controls_label_0)
+        self.all_labels.append(controls_label_1)
+        self.all_labels.append(controls_label_2)
+        self.all_labels.append(controls_label_3)
+        self.all_labels.append(controls_label_4)
+        self.all_labels.append(controls_label_5)
+        self.all_labels.append(controls_label_6)
+        self.all_labels.append(controls_label_7)
+        self.all_labels.append(controls_label_8)
+        self.all_labels.append(controls_label_9)
 
 
 
@@ -508,17 +612,22 @@ class MyApp(ShowBase):
             self.otv_label.setPos(otv_screen_pos[0] + 0.05 , otv_screen_pos[1])
             
 
-        for i in range(1 , self.n_debris):
-            debris_screen_pos = self.get_object_screen_pos(self.debris_nodes[i])
-            if debris_screen_pos is not None:
-                self.debris_labels[i-1].setPos(debris_screen_pos[0] + 0.05 , debris_screen_pos[1])
+        if self.hud_value == 1:
+            for i in range(1 , self.n_debris):
+                debris_screen_pos = self.get_object_screen_pos(self.debris_nodes[i])
+
+                if debris_screen_pos is not None:
+                    self.debris_labels[i-1].setPos(debris_screen_pos[0] + 0.05 , debris_screen_pos[1])
+                    self.debris_labels[i-1].show()
+                else:
+                    self.debris_labels[i-1].hide()
+
+
+                if i == self.current_target+1:
+                    self.debris_labels[i-1].setText(f"Debris {i} (Target)")
+                else:
+                    self.debris_labels[i-1].setText(f"Debris {i}")
                 
-
-        # self.update_image_scale(self.circle_img , 0.1)
-
-
-
-    
 
 
     
@@ -533,9 +642,14 @@ class MyApp(ShowBase):
     def update_camera_task(self, task):
         # Check if the left mouse button is still down
         if self.mouseWatcherNode.isButtonDown(MouseButton.one()):
+
             # Get the mouse position
-            current_mouse_x = self.mouseWatcherNode.getMouseX()
-            current_mouse_y = self.mouseWatcherNode.getMouseY()
+            if self.mouseWatcherNode.hasMouse():
+                current_mouse_x = self.mouseWatcherNode.getMouseX()
+                current_mouse_y = self.mouseWatcherNode.getMouseY()
+            else:
+                self.taskMgr.remove("update_camera_task")
+                return task.done
 
             # Check if the mouse has moved horizontally
             if current_mouse_x != self.last_mouse_x:
@@ -582,24 +696,6 @@ class MyApp(ShowBase):
 
         self.camera.setPos(Vec3(x_pos, y_pos, z_pos))
         self.camera.lookAt(Point3(0, 0, 0))
-
-
-        # Light
-        # if self.light_angle_around_origin > 360:
-        #     self.light_angle_around_origin -= 360
-        # if self.light_angle_around_origin < 0:
-        #     self.light_angle_around_origin += 360
-
-        # radian_angle = np.radians(self.light_angle_around_origin)
-        # radian_elevation = np.radians(self.light_elevation_angle)
-        # x_pos = 10 * np.sin(radian_angle) * np.cos(radian_elevation)
-        # y_pos = -10 * np.cos(radian_angle) * np.cos(radian_elevation)
-        # z_pos = 10 * np.sin(radian_elevation)
-
-        # self.plight_np.setPos(Vec3(-y_pos, 0, -x_pos))
-        # self.plight_np.lookAt(Point3(0, 0, 0))
-        
-
         
         
 
@@ -649,7 +745,7 @@ class MyApp(ShowBase):
                                     pos=pos, # Position on the screen
                                     scale=scale, # Text scale
                                     fg=(1, 1, 1, 1), # Text color (R, G, B, A)
-                                    bg=(0, 0, 0, 0.5), # Background color (R, G, B, A)
+                                    bg=(0, 0, 0, 0), # Background color (R, G, B, A)
                                     align=alignment_mode, # Text alignment
                                     font=custom_font,
                                     mayChange=True) # Allow text to change dynamically
@@ -674,29 +770,67 @@ class MyApp(ShowBase):
 
 
     def on_a_pressed(self):
-        self.toggle_plane_visualisation()
+        self.atmosphere_value = 1 - self.atmosphere_value
+        
+        if self.atmosphere_value == 1:
+            self.diagram_value = 0
+            self.show_skybox()
 
-    def on_z_pressed(self):
-        if self.visualisation_plane_4.isHidden():
-            self.visualisation_plane_4.show()
+
+    def on_h_pressed(self):
+        self.hud_value = 1 - self.hud_value
+
+        if self.hud_value == 1:
+            for label in self.all_labels:
+                label.show()
         else:
-            self.visualisation_plane_4.hide()
+            for label in self.all_labels:
+                label.hide()   
+
 
     def on_d_pressed(self):
         self.diagram_value = 1 - self.diagram_value
+        # if self.diagram_value == 1:
+        #     self.atmosphere_value = 0
+        #     self.cloud_value = 0
         self.toggle_skybox()
+
+        
+        if self.diagram_value == 1:
+            for label in self.all_labels:
+                # set text to black
+                label.fg = (0,0,0,1)
+
+        elif self.diagram_value == 0:
+            for label in self.all_labels:
+                # set text to white
+                label.fg = (1,1,1,1)
 
 
     def toggle_skybox(self):
         self.skybox_value = 1 - self.skybox_value
         
         if self.skybox_value == 1:
-            for plane in self.skybox:
-                plane.show()
+            self.show_skybox()
         else:
-            for plane in self.skybox:
-                plane.hide()
+            self.hide_skybox()
+
+    def show_skybox(self):
+        self.skybox_value = 1
+        for plane in self.skybox:
+            plane.show()
+
+    def hide_skybox(self):
+        self.skybox_value = 0
+        for plane in self.skybox:
+            plane.hide()
         
+    def on_f_pressed(self):
+        self.full_trajectory_value = 1 - self.full_trajectory_value
+
+        if self.full_trajectory_value == 0:
+            self.full_traj_is_computed = 0
+
 
     def on_space_pressed(self):
         self.game_is_paused = not self.game_is_paused

@@ -62,7 +62,8 @@ class ADR_Environment(BaseEnvironment):
                            dt_max_per_mission = self.dt_max_per_mission ,
                            first_debris = self.first_debris,
                            priority_is_on = self.priority_is_on,
-                           refuel_station_indices=self.init_refuel_indices(),
+                        #  refuel_station_indices=self.init_refuel_indices(),
+                           refuel_station_indices=[4],
                            refuel_station_is_on = self.refuel_station_is_on
                             )
         

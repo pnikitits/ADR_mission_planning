@@ -3,7 +3,7 @@ from src.environment.Strat_1 import CV , strat_1_dv
 from astropy import units as u
 
 class State:
-    def __init__(self , removal_step , total_n_debris , dv_max_per_mission , dt_max_per_mission , first_debris, priority_is_on, refuel_station_indices, refuel_station_is_on, refuel_amount=1):
+    def __init__(self , removal_step , total_n_debris , dv_max_per_mission , dt_max_per_mission , first_debris, priority_is_on, refuel_station_indices, refuel_station_is_on, refuel_amount=0.0):
         self.removal_step = removal_step
         self.number_debris_left = total_n_debris
         self.dv_left = dv_max_per_mission

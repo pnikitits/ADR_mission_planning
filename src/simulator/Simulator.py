@@ -18,8 +18,8 @@ class Debris:
 class Simulator:
     def __init__(self , starting_index=1 , n_debris=10, starting_fuel=1000):
         # Initialise the debris dictionary and assign the otv to an Orbit
-        self.debris_list = self.init_random_debris(n=n_debris) 
-        # self.debris_list = self.debris_from_dataset(n=n_debris) #le dataset contient 320 debris
+        # self.debris_list = self.init_random_debris(n=n_debris) 
+        self.debris_list = self.debris_from_dataset(n=n_debris) #le dataset contient 320 debris
         check_debris = False
         if check_debris:
             for idx, target_debris in enumerate(self.debris_list):

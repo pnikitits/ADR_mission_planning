@@ -16,7 +16,7 @@ from src.rlglue.agent import BaseAgent
 from src.environment.ADR_Environment import ADR_Environment
 from src.visualisation.plot_script import plot_result
 
-def run_experiment(environment , agent , environment_parameters , agent_parameters , experiment_parameters, wandb_tracking=False):
+def run_experiment(environment , agent , environment_parameters , agent_parameters , experiment_parameters, wandb_tracking=True):
     """
     Run the experiment
     """

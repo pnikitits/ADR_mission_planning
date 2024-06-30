@@ -28,7 +28,7 @@ class ADR_Environment(BaseEnvironment):
             self.random_first_debris = env_info['random_first_debris']
 
         # Debugging
-        self.debug = False
+        self.debug = True
         self.debug_list = [0, 0, 0, 0]
 
         self.fuel_uses_in_episode = [] # to log the fuel use
@@ -60,7 +60,9 @@ class ADR_Environment(BaseEnvironment):
                            dv_max_per_mission = self.dv_max_per_mission ,
                            dt_max_per_mission = self.dt_max_per_mission ,
                            first_debris = self.first_debris,
-                           priority_is_on = self.priority_is_on)
+                           priority_is_on = self.priority_is_on,
+                           refuel_station_indices=self.init_refuel_indices()
+                            )
         
 
         observation = self.env_observe_state()
@@ -151,6 +153,10 @@ class ADR_Environment(BaseEnvironment):
 
         # Set reward to 0 if the action is not legal
         if not self.action_is_legal:
+            reward = 0
+
+        # Set reward to 0 if at refuel station
+        if self.state.refuel_station_binary_flags[action_target] == 1:
             reward = 0
         
         return reward
@@ -247,7 +253,7 @@ class ADR_Environment(BaseEnvironment):
         priority_debris = None
 
         # Get the list of indices where the binary flag is 0
-        available_debris = [i for i, flag in enumerate(self.state.binary_flags) if flag == 0]
+        available_debris = [i for i, flag in enumerate(self.state.binary_flags) if flag == 0 and self.state.refuel_station_binary_flags[i]==0]
 
         if random.random() < 0.3:
             # Randomly select a debris from the available list
@@ -255,6 +261,14 @@ class ADR_Environment(BaseEnvironment):
 
             # priority_debris = random.randint(0, self.total_n_debris-1)
         return priority_debris
+    
+    def init_refuel_indices(self):
+        # Return a list of indices where the refuel stations are located
+        nb_refuel_stations = self.total_n_debris // 6
+        refuel_indices = random.sample(range(self.total_n_debris), nb_refuel_stations)
+        print('Refuel indices: ', refuel_indices) if self.debug else None
+        return refuel_indices
+        
 
     def init_debris(self):
         pass

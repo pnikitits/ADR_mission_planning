@@ -12,10 +12,8 @@ if __name__ == "__main__":
     start_time = time.perf_counter()
 
     current_env = ADR_Environment
-    a = wandb.init()
-    
 
-    with open("src/config/exhaustive_config_10.yaml") as file: # change file name to use different sweep
+    with open("src/config/refuel_test_1.yaml") as file: # change file name to use different sweep
         config = yaml.load(file, Loader=yaml.FullLoader)
 
     agent_parameters = config['agent_parameters']

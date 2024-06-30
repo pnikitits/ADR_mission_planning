@@ -1,0 +1,32 @@
+agent_parameters:
+  network_config:
+    state_dim: 23
+    num_hidden_units: 256
+    num_actions: 6
+  optimizer_config:
+    step_size: 0.001 # learning rate of the optimizer AND step size in TD-Update
+    beta_m: 0.9
+    beta_v: 0.999
+    epsilon: 0.00000001
+  replay_buffer_size: 500000
+  minibatch_size: 64
+  num_replay_updates_per_step: 4
+  gamma: 0.99
+  tau: 0.1
+  seed: 4
+
+experiment_parameters:
+  num_runs: 1
+  num_episodes: 10000
+  timeout: 10000
+  gpu_use: True
+  track_wandb: False
+
+environment_parameters:
+  total_n_debris: 6 # TODO gets len debris after datareader
+  dv_max_per_mission: 1.364005 # * u.km / u.s
+  dt_max_per_mission: 100 # * u.day
+  dt_max_per_transfer: 30 # * u.day 
+  priority_is_on : False
+  time_based_action : False
+  random_first_debris: False # To set the first debris, use env_start

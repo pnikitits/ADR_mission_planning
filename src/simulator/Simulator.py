@@ -70,7 +70,9 @@ class Simulator:
         # Apply the maneuver to the otv
         self.otv_orbit, inc_frames = self.otv_orbit.apply_maneuver_custom(inc_change, copy.deepcopy(self.debris_list) if render else None, step_sec=step_sec, render=render)
         # Append the current fuel to the frames df
-        inc_frames['fuel'] = self.current_fuel if render else None
+        if render:
+            inc_frames['fuel'] = self.current_fuel
+        
         self.current_fuel -= inc_change.get_total_cost().value
 
         # Propagate all debris to the end of the transfer
@@ -88,7 +90,9 @@ class Simulator:
         # Apply the maneuver to the otv
         self.otv_orbit, raan_frames = self.otv_orbit.apply_maneuver_custom(raan_change, copy.deepcopy(self.debris_list) if render else None, step_sec=step_sec, render=render)
         # Append the current fuel to the frames df
-        raan_frames['fuel'] = self.current_fuel if render else None
+        if render:
+            raan_frames['fuel'] = self.current_fuel
+        
         self.current_fuel -= inc_change.get_total_cost().value
 
         # Propagate all debris to the end of the transfer
@@ -106,7 +110,9 @@ class Simulator:
         # Apply the maneuver to the otv
         self.otv_orbit, hoh_frames = self.otv_orbit.apply_maneuver_custom(hoh_change, copy.deepcopy(self.debris_list) if render else None, step_sec=step_sec, render=render)
         # Append the current fuel to the frames df
-        hoh_frames['fuel'] = self.current_fuel if render else None
+        if render:
+            hoh_frames['fuel'] = self.current_fuel
+        
         self.current_fuel -= inc_change.get_total_cost().value
 
         # Propagate all debris to the end of the transfer

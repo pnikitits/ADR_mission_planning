@@ -16,10 +16,11 @@ from src.rlglue.agent import BaseAgent
 from src.environment.ADR_Environment import ADR_Environment
 from src.visualisation.plot_script import plot_result
 
-def run_experiment(environment , agent , environment_parameters , agent_parameters , experiment_parameters):
+def run_experiment(environment , agent , environment_parameters , agent_parameters , experiment_parameters, wandb_tracking=False):
     """
     Run the experiment
     """
+    a = wandb.init() if wandb_tracking else None
 
     rl_glue = RLGlue(environment, agent)
     agent_sum_reward = np.zeros((experiment_parameters["num_runs"],
@@ -60,18 +61,19 @@ def run_experiment(environment , agent , environment_parameters , agent_paramete
             agent_sum_reward[run - 1, episode - 1] = episode_reward
 
             # wand logging
-            wandb.log({
-                    "episode loss": ep_loss,
-                    "episode reward": episode_reward ,
-                    "fuel limit": fuel_limit,
-                    "time limit": time_limit,
-                    "impossible_dt": impossible_dt,
-                    "impossible_binary_flag": impossible_binary_flag,
-                    "average fuel used":avg_fuel_used,
-                    "average time used":avg_time_used
-                })
+            if wandb_tracking:
+                wandb.log({
+                        "episode loss": ep_loss,
+                        "episode reward": episode_reward ,
+                        "fuel limit": fuel_limit,
+                        "time limit": time_limit,
+                        "impossible_dt": impossible_dt,
+                        "impossible_binary_flag": impossible_binary_flag,
+                        "average fuel used":avg_fuel_used,
+                        "average time used":avg_time_used
+                    })
 
-    wandb.log({"avg_reward": sum(agent_sum_reward[0])/experiment_parameters["num_episodes"]})
+    wandb.log({"avg_reward": sum(agent_sum_reward[0])/experiment_parameters["num_episodes"]}) if wandb_tracking else None
  
     # subfolder = 'models/'
     # model_name = input("model name : ")

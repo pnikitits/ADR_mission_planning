@@ -28,5 +28,6 @@ environment_parameters:
   dt_max_per_mission: 100 # * u.day
   dt_max_per_transfer: 30 # * u.day 
   priority_is_on : False
+  refuel_station_is_on : True
   time_based_action : False
   random_first_debris: False # To set the first debris, use env_start

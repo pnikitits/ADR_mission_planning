@@ -26,6 +26,7 @@ class ADR_Environment(BaseEnvironment):
             self.priority_is_on = env_info['priority_is_on']   # Boolean
             self.time_based_action = env_info['time_based_action'] # Boolean
             self.random_first_debris = env_info['random_first_debris']
+            self.refuel_station_is_on = env_info['refuel_station_is_on']
 
         # Debugging
         self.debug = True
@@ -61,7 +62,8 @@ class ADR_Environment(BaseEnvironment):
                            dt_max_per_mission = self.dt_max_per_mission ,
                            first_debris = self.first_debris,
                            priority_is_on = self.priority_is_on,
-                           refuel_station_indices=self.init_refuel_indices()
+                           refuel_station_indices=self.init_refuel_indices(),
+                           refuel_station_is_on = self.refuel_station_is_on
                             )
         
 

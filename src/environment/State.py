@@ -3,7 +3,7 @@ from src.environment.Strat_1 import CV , strat_1_dv
 from astropy import units as u
 
 class State:
-    def __init__(self , removal_step , total_n_debris , dv_max_per_mission , dt_max_per_mission , first_debris, priority_is_on, refuel_station_indices, refuel_amount=1):
+    def __init__(self , removal_step , total_n_debris , dv_max_per_mission , dt_max_per_mission , first_debris, priority_is_on, refuel_station_indices, refuel_station_is_on, refuel_amount=1):
         self.removal_step = removal_step
         self.number_debris_left = total_n_debris
         self.dv_left = dv_max_per_mission
@@ -13,13 +13,15 @@ class State:
         self.binary_flags[self.current_removing_debris] = 1
         self.priority_list = np.ones(total_n_debris).tolist()
         self.priority_is_on = priority_is_on
+        self.refuel_station_is_on = refuel_station_is_on
 
         # Refuel station
         self.refuel_amount = refuel_amount
         self.refuel_station_binary_flags =  np.zeros(total_n_debris).tolist()
-        for index in refuel_station_indices:
-            # One hot encoding
-            self.refuel_station_binary_flags[index] = 1
+        if self.refuel_station_is_on:
+            for index in refuel_station_indices:
+                # One hot encoding
+                self.refuel_station_binary_flags[index] = 1
 
         # Used for normalising
         self.dt_max_per_mission = dt_max_per_mission

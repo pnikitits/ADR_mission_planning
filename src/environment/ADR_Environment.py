@@ -63,8 +63,9 @@ class ADR_Environment(BaseEnvironment):
                            first_debris = self.first_debris,
                            priority_is_on = self.priority_is_on,
                         #  refuel_station_indices=self.init_refuel_indices(),
-                           refuel_station_indices=[4],
-                           refuel_station_is_on = self.refuel_station_is_on
+                           refuel_station_indices=[1],
+                           refuel_station_is_on = self.refuel_station_is_on,
+                           refuel_amount=1.0,
                             )
         
 
@@ -129,7 +130,7 @@ class ADR_Environment(BaseEnvironment):
 
     
 
-    def env_start(self, first_debris=3):
+    def env_start(self, first_debris=0):
         print("\nENV START\n") if self.debug else None
         reward = 0.0
         is_terminal = False

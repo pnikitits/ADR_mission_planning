@@ -16,7 +16,20 @@ class Debris:
 
 
 class Simulator:
-    def __init__(self , starting_index=1 , n_debris=10, starting_fuel=1000):
+    def __init__(self, starting_index:int=1, n_debris:int=10, starting_fuel:int=5000):
+        """
+        Initialise the simulator with the otv and debris
+        
+        Parameters
+        ----------
+        starting_index : int
+            Index of the debris to start with
+        n_debris : int
+            Number of debris to initialise the simulator with
+        starting_fuel : int
+            Starting fuel of the otv in m/s
+        """
+        
         # Initialise the debris dictionary and assign the otv to an Orbit
         self.debris_list = self.init_random_debris(n=n_debris) 
         # self.debris_list = self.debris_from_dataset(n=n_debris) #le dataset contient 320 debris
@@ -70,7 +83,8 @@ class Simulator:
         # Apply the maneuver to the otv
         self.otv_orbit, inc_frames = self.otv_orbit.apply_maneuver_custom(inc_change, copy.deepcopy(self.debris_list) if render else None, step_sec=step_sec, render=render)
         # Append the current fuel to the frames df
-        inc_frames['fuel'] = self.current_fuel if render else None
+        if render:
+            inc_frames['fuel'] = self.current_fuel
         self.current_fuel -= inc_change.get_total_cost().value
 
         # Propagate all debris to the end of the transfer
@@ -88,7 +102,8 @@ class Simulator:
         # Apply the maneuver to the otv
         self.otv_orbit, raan_frames = self.otv_orbit.apply_maneuver_custom(raan_change, copy.deepcopy(self.debris_list) if render else None, step_sec=step_sec, render=render)
         # Append the current fuel to the frames df
-        raan_frames['fuel'] = self.current_fuel if render else None
+        if render:
+            raan_frames['fuel'] = self.current_fuel
         self.current_fuel -= inc_change.get_total_cost().value
 
         # Propagate all debris to the end of the transfer
@@ -106,7 +121,8 @@ class Simulator:
         # Apply the maneuver to the otv
         self.otv_orbit, hoh_frames = self.otv_orbit.apply_maneuver_custom(hoh_change, copy.deepcopy(self.debris_list) if render else None, step_sec=step_sec, render=render)
         # Append the current fuel to the frames df
-        hoh_frames['fuel'] = self.current_fuel if render else None
+        if render:
+            hoh_frames['fuel'] = self.current_fuel
         self.current_fuel -= inc_change.get_total_cost().value
 
         # Propagate all debris to the end of the transfer

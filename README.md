@@ -2,11 +2,21 @@
 
 ## Dependencies
 To install dependencies:
-* conda command
+<!-- * conda command
 ```bash
 conda env create -f environment.yml
-```
+``` -->
 
+<!-- FYI Environment qui marche: -->
+```
+python                    3.8.18
+pytorch                   2.2.1
+astropy                   5.2.2
+poliastro                 0.17.0
+ipykernel                 6.29.2
+tqdm                      4.66.2
+wandb                     0.16.3
+```
 ## Run experiment
 To train the agent on the ADR env:
 

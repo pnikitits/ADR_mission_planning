@@ -3,7 +3,15 @@ from src.environment.Strat_1 import CV , strat_1_dv
 from astropy import units as u
 
 class State:
-    def __init__(self , removal_step , total_n_debris , dv_max_per_mission , dt_max_per_mission , first_debris, priority_is_on):
+    def __init__(self,
+                 removal_step: int,
+                 total_n_debris: int,
+                 dv_max_per_mission,
+                 dt_max_per_mission,
+                 first_debris: int,
+                 priority_is_on: bool,
+                 can_see_priority: bool):
+        
         self.removal_step = removal_step
         self.number_debris_left = total_n_debris
         self.dv_left = dv_max_per_mission
@@ -13,6 +21,7 @@ class State:
         self.binary_flags[self.current_removing_debris] = 1
         self.priority_list = np.ones(total_n_debris).tolist()
         self.priority_is_on = priority_is_on
+        self.can_see_priority = can_see_priority
 
         # Used for normalising
         self.dt_max_per_mission = dt_max_per_mission
@@ -41,11 +50,9 @@ class State:
 
 
     def to_list(self):
-        # Toggle to give access to the priority list
-        access_priority_list = True
         # create a list of zeros same lenght as the priority list
         p_list = np.zeros(len(self.priority_list)).tolist()
-        if access_priority_list:
+        if self.can_see_priority: # Toggle to give access to the priority list
             p_list = self.priority_list
 
         #print(f"Priority list: {p_list}")

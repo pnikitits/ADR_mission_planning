@@ -26,6 +26,7 @@ class ADR_Environment(BaseEnvironment):
             self.priority_is_on = env_info['priority_is_on']   # Boolean
             self.time_based_action = env_info['time_based_action'] # Boolean
             self.random_first_debris = env_info['random_first_debris']
+            self.can_see_priority = env_info['can_see_priority']
 
         # Debugging
         self.debug = False
@@ -60,7 +61,8 @@ class ADR_Environment(BaseEnvironment):
                            dv_max_per_mission = self.dv_max_per_mission ,
                            dt_max_per_mission = self.dt_max_per_mission ,
                            first_debris = self.first_debris,
-                           priority_is_on = self.priority_is_on)
+                           priority_is_on = self.priority_is_on,
+                           can_see_priority = self.can_see_priority)
         
 
         observation = self.env_observe_state()

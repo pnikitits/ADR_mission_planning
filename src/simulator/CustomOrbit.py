@@ -662,14 +662,39 @@ class Orbit(OrbitCreationMixin):
                         otv_pos , _ = otv_copy.rv()
                         otv_pos = otv_pos.to(u.km).value / 6371
                         
-                        new_data = [otv_pos]
+                        # OTV data (getting extra data for plots, not for the visulisation)
+                        otv_inc = otv_copy.inc.to(u.deg).value
+                        otv_raan = otv_copy.raan.to(u.deg).value
+                        otv_argp = otv_copy.argp.to(u.deg).value
+                        otv_nu = otv_copy.nu.to(u.deg).value
+                        otv_ecc = otv_copy.ecc.value
+                        otv_a = otv_copy.a.to(u.km).value
+                        otv_data = [otv_pos , otv_inc , otv_raan , otv_argp , otv_nu , otv_ecc , otv_a]
+                        # print(f"Frame {frame_id} - OTV: {otv_data}")
+                        # --------
+                        
+                        new_data = [otv_pos] # [otv_data]
+                        
                         # Adding debris data
                         for i , debris in enumerate(debris_list):
                             debris_list[i].poliastro_orbit = debris.poliastro_orbit.propagate(dt)
 
                             deb_i_pos , _ = debris_list[i].poliastro_orbit.rv()
                             deb_i_pos = deb_i_pos.to(u.km).value / 6371
-                            new_data.append(deb_i_pos)
+                            
+                            
+                            # Debris data (getting extra data for plots, not for the visulisation)
+                            deb_i_inc = debris_list[i].poliastro_orbit.inc.to(u.deg).value
+                            deb_i_raan = debris_list[i].poliastro_orbit.raan.to(u.deg).value
+                            deb_i_argp = debris_list[i].poliastro_orbit.argp.to(u.deg).value
+                            deb_i_nu = debris_list[i].poliastro_orbit.nu.to(u.deg).value
+                            deb_i_ecc = debris_list[i].poliastro_orbit.ecc.value
+                            deb_i_a = debris_list[i].poliastro_orbit.a.to(u.km).value
+                            deb_i_data = [deb_i_pos , deb_i_inc , deb_i_raan , deb_i_argp , deb_i_nu , deb_i_ecc , deb_i_a]
+                            # print(f"Frame {frame_id} - Debris {i+1}: {deb_i_data}")
+                            # --------
+                            
+                            new_data.append(deb_i_pos) # (deb_i_data)
 
                         df.loc[frame_id] = new_data
                         total_frames += n_frames
